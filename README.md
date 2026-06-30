@@ -1,181 +1,63 @@
 # song-study
 
-AI 驱动的歌曲学习资料生成器 — Claude Code skill，输出精美排版的 `.md` + `.docx` 双格式。
+一首歌来到你面前的时候，它已经走过了很长的路。词曲作者的深夜、录音棚里的反复、混音师耳中残响的余韵——而你听到的，是这条路的终点。这个 skill 想做的，是陪你往回走一段。
 
-## 这是什么
+嘛，说人话就是：你跟 Claude 说一句"学一下 群青"，它会把歌词一字不漏地找来、多源交叉比对、每句标上罗马音和中文翻译，接着拆出里面值得学的词汇和语法点，分析演唱时气口和情绪该怎么走——最后产出三样东西：一份呼吸感排版的 Markdown、一份带色彩语义系统的 Word 文档、一套低饱和旧纸张质感的歌词海报 PPT。
 
-给 Claude Code 装一个"学歌助手"技能。你只要说"学一下 tuki. 的 騙シ愛"，Claude 会自动搜索歌词、多源交叉校验、逐句标注发音和翻译、分析语法点和文化笔记、拆解演唱技巧——最后生成两份排版精良的学习资料放在 `E:/song-study/` 下。
+## 你能做什么
 
-## 输出物
+对着 Claude 说"这首歌怎么唱"，后面跟歌名和歌手名就好。日文的、英文的、中文的，都可以。它自己会判断语言、自己去找歌词、自己决定走哪条排版路径。
 
-每首歌一个文件夹：
+具体的触发方式大抵是这些：「学歌」「学唱」「帮我扒歌词」「学一下 Ado 的 唱」「最近在听 YOASOBI」——哪怕只是随口提一句在听的歌，它也会认真对待，因为许是你真的想深入了解。
 
-```
-E:/song-study/{歌手名}_{歌名}/
-├── {歌手名}_{歌名}.md      # Markdown — 呼吸感排版、引文缩进、校验标注
-├── {歌手名}_{歌名}.docx    # Word — 色彩语义系统、交替行着色、左边框引文
-└── gen_docx.py             # 生成脚本（由 Claude 根据本 skill 编写）
-```
+日文歌的体验是最完整的：假名注音浮在汉字上方、明朝体压画面、罗马音用打字机字体做辅助标注——像一张精心排过的日系文艺海报。英文歌走 Caslon 衬线体，同样克制干净。中文歌跳过了语言学习模块，但背景故事和演唱技巧一样不缺。
 
-Markdown 示例：
+## 你能得到什么
 
-```
-# 歌曲学习：騙シ愛 (Damashiai)
+每首歌一个文件夹，里面三份文件。
 
-───
+Markdown 版适合在手机或电脑上翻阅——标题下有分隔线、段落之间有呼吸、引文有退格、校验信息有绿色的勾。读起来不累。
 
-## 基本信息
-| 项目 | 内容 |
-|------|------|
-...
-```
+Word 版是拿来打印的。每种信息类型有自己的表头颜色：基本信息的淡蓝、歌词的暖米、词汇的淡绿、语法的淡紫、演唱技巧的暖金——不是装饰，是让你翻到哪里一眼就知道在看什么。
 
-Word 示例 — 表头用颜色区分信息类型：
+PPT 版是纯歌词卡片，16:9 宽屏海报风格。背景不是均匀色块——七层管线叠出来的：方向性渐变、水彩晕染、和纸纤维、大气光池——每首歌的底色根据调性自动选定，文字色自适应到 WCAG 可读标准。一页一两句歌词，像翻一本安静的小册子。
 
-| 表类型 | 表头色 | 语义 |
-|--------|--------|------|
-| 基本信息 | `#D6E4F0` 淡蓝 | 信息、客观 |
-| 歌词对照 | `#F5EBE0` 暖米 | 文本、人文 |
-| 核心词汇 | `#E8F0E4` 淡绿 | 学习、成长 |
-| 语法/文化 | `#EDE8F5` 淡紫 | 分析、思辨 |
-
-## 目录结构
-
-```
-skill.md                     # 主文件 — 完整执行流程（~340 行）
-scripts/
-├── docx_template.py         # Word 生成模板 — create_document / make_table / add_quote / add_singing_tip / add_verification_block
-└── feishu_sender.py         # cc-connect 飞书文件发送 — Python urllib 直连，正确处理 CJK 文件名
-references/
-└── cc-connect-file-send.md  # cc-connect 环境文件发送参考文档
-```
-
-### feishu_sender.py
-
-通过飞书 Open API 上传文件 + 发送文件消息。接受文件路径列表作为参数：
-
-```bash
-PYTHONUTF8=1 python scripts/feishu_sender.py <file1> <file2> ...
-```
-
-- 从 `~/.cc-connect/config.toml` 读取 app_id/app_secret
-- 从 session 文件提取当前飞书 chat_id
-- 用 `urllib` multipart/form-data 直传，避免 shell 编码损伤 CJK 文件名
-
-## 内容结构
-
-每首歌的资料覆盖以下模块，缺一不可：
-
-1. **基本信息** — 歌名、演唱者、词曲作者、专辑、发行日期、语言、版本（录音室/live/remastered）
-2. **背景故事** — 创作动机、过程细节、发行反响、影视/游戏 tie-up（有事实不写套话）
-3. **歌词** — 多源交叉验证后的完整歌词
-   - 日语歌：三列表格（原文 | 罗马音 | 中文翻译）
-   - 英文歌：两列表格（原文 | 中文翻译），逐短句拆分
-   - 中文歌：段落排版
-4. **语言学习**（外文歌专属）
-   - 核心词汇 10–15 个（JLPT 等级标注）
-   - 语法点 3–5 个（歌词原句引用 + 结构拆解）
-   - 文化笔记（不直译会误解的表达）
-5. **演唱技巧** — 音高/节奏/气息/咬字/情绪，问题→方法对照
-6. **附录** — 歌词来源 URL、背景信息来源 URL、校验声明
-
-## 设计系统
-
-文档排版不是随便加的格式——每种颜色、每种边框都对应特定的信息类型。
-
-### Markdown 视觉规则
-
-- `#` 标题下方 `───` 分隔线
-- `##` 标题前后空行，保持呼吸感
-- 歌手原话用 `>` 引文块 + 前后空行
-- 校验状态用 `> ✅` 或 `> ⚠️`
-- 表格前后各空一行
-- 演唱技巧 `→` 分两行，形成视觉对比
-
-### Word 文档视觉规则
-
-- 表头着色：每种信息类型独立颜色（蓝/米/绿/紫）
-- 交替行着色：奇数行白底、偶数行 `#F8F8F8`
-- 歌手引文：左缩进 0.8cm + 左边框 `#D4A574` 1.5pt + 斜体
-- 语法点标题：加粗 + `#B85C3A` 琥珀色
-- 演唱技巧整节：`#FFF3E0` 暖金底色
-- 校验声明块：`#F8F8F8` 底色 + `#2C3E50` 左边框
-
-### 字体只用系统自带
-
-| 语言 | 正文 | 标题 |
-|------|------|------|
-| 中文 | SimSun（宋体） | Microsoft YaHei（微软雅黑） |
-| 日文 | MS Mincho（MS 明朝） | Meiryo（メイリオ） |
-| 英文/罗马音 | Arial | Arial |
-
-禁止使用 Noto CJK、思源系列等第三方字体——系统字体字符覆盖最完整，无缺字风险。
-
-## 歌词验证流程
-
-歌词不能出错。执行流程：
-
-```
-WebSearch（多关键词、多语言）
-  → WebSearch 聚合摘要（优先利用，不易被拦）
-  → WebFetch / curl（抓取 2–3 个来源）
-  → 逐句交叉比对
-  → 发现出入 → 官方来源 > 大型歌词数据库 > 博客
-  → 无法确认 → 标注 ⚠️
-```
-
-## Word 生成管线
-
-```
-SKILL.md（Claude 执行）
-  → 编写 gen_docx.py（import scripts/docx_template.py 函数）
-  → python-docx 渲染
-  → {歌名}.docx
-```
-
-`scripts/docx_template.py` 提供可复用函数：
-- `create_document(path)` — 创建文档，设置页边距
-- `make_table(doc, headers, rows, header_color, widths)` — 表头着色 + 交替行
-- `add_quote_paragraph(doc, text)` — 左边框引文
-- `add_singing_tip(doc, name, problem, solution)` — 暖金底色演唱技巧
-- `add_verification_block(doc, text)` — 校验声明块
-- `set_font(run, cn, en, size, bold, color)` — 中日英字体指定
-- `set_cell_shading(cell, color)` — 单元格着色
-
-Python 选用 `python-docx` 而非 JS `docx-js`——对中日文字符的字体回落处理更可靠。
-
-## cc-connect 发送
-
-运行在 cc-connect 环境中时，生成文件后自动推送到飞书。发送使用 Python `urllib` 直连（不用 shell curl——CJK 文件名会被 shell 编码损坏）。详见 `references/cc-connect-file-send.md`。
-
-## 安装
+## 装起来
 
 ```bash
 git clone https://github.com/FrostLark-XH/song-study.git
 cp SKILL.md ~/.claude/skills/song-study/SKILL.md
 cp -r scripts/ ~/.claude/skills/song-study/scripts/
 cp -r references/ ~/.claude/skills/song-study/references/
-pip install python-docx
+pip install python-docx sudachipy sudachidict-core scipy
 ```
 
-触发词：`学歌` `学唱` `这首歌怎么唱` `帮我扒歌词` `歌词` `学一下X的歌` `最近在听X`
+PPT 那部分依赖几个额外的库——numpy、scipy、Pillow、python-pptx、SudachiPy。如果不需要 PPT，只装 python-docx 就够了，Markdown 和 Word 两条路径不依赖那些。
+
+歌曲数据默认存在 `E:/song-study/`，想改路径的话设一个 `SONG_STUDY_DATA` 环境变量就好。PPT 的 mood 背景系统会自动从歌曲的 bg_color 判断调性，也可以在 data.json 里手动指定 warm/cool/dark/dreamy/neutral。
+
+## 这个 skill 在意什么
+
+歌词不能出错。每一首歌的歌词都经过至少两个来源的交叉比对——Genius、维基百科、百度百科、uta-net——有出入的地方优先信官方来源，实在无法确认的，大大方方标上 ⚠️。
+
+翻译要忠实，不是要优美。先让人看懂原句在说什么，再说好不好唱。罗马音要能直接跟唱，不是语言学研究。
+
+字体只用系统自带的。宋体、MS Mincho、Arial——这些字体内置在每台电脑里，字符覆盖最完整，不会出现打开文档发现缺字的情况。Noto CJK 和思源系列虽然好看，但装了这个 skill 的人不一定有。
+
+设计不是随便加的。每一条边框、每一种颜色、每一个缩进——都对应一种信息类型。不是"好看就行"，是"扫一眼就知道你在看什么"。
 
 ## 示例
 
-已生成的学习资料：
+仓库里放了两首成品，可以直接翻看——
 
-| 歌曲 | 语言 | 特点 |
-|------|------|------|
-| [tuki. — 騙シ愛](tuki._騙シ愛/) | 日语 | TBS 日剧《Caster》主题歌，16 岁创作歌手 |
-| [Jekyll & Hyde — Façade](Jekyll_Hyde_Façade/) | 英语 | 音乐剧选段，社会批判主题 |
+騙シ愛（tuki.）是日文路径的典型：三列歌词对照、假名注音、语法拆解、演唱气口标注——一份完整的学习资料该有的样子。
 
-## 约束
+Façade（Jekyll & Hyde 音乐剧）是英文路径：Caslon 衬线体排版、逐短句拆分、社会讽刺主题的文化背景——音乐剧选段的学习方式。
 
-- 歌词绝对不能编造——宁可标注"无法完全确认"
-- 发音标注必须能直接跟唱，不用 IPA
-- 翻译忠实第一，优美第二
-- 不跳过任何步骤
-- 纯音乐/无人声曲跳过歌词部分，重点做背景和演奏技巧
-- Word 文档必须带颜色语义，交替行着色不能省略
-- 字体只许用系统自带，禁止第三方 CJK 字体
-- shell curl 不用于飞书发送——用 `scripts/feishu_sender.py`
+## 限制
+
+这个 skill 不做的事情：不帮你唱、不帮你纠正发音、不替代声乐老师。它帮你把"了解一首歌"的门槛降到最低——剩下的，是你和麦克风之间的事。
+
+也不做歌词翻译的"再创作"。有些人喜欢把日文歌词译成漂亮的现代诗——那不是这条路。这条路是：原文说了什么、每个词什么意思、为什么这样表达——然后你自己决定该怎么唱。
+
+嘛，大抵就是这样了。胡言乱语了许多。
