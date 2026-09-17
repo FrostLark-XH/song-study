@@ -359,23 +359,28 @@ PYTHONUTF8=1 python build_pptx.py "<song-dir>/data.json"
 PYTHONUTF8=1 python build_pptx.py --all
 ```
 
-**背景色选择**：每首歌根据调性和专辑封面确定一个低饱和纸张底色，写入 data.json 的 `bg_color` 字段（6 位十六进制，不带 `#`）。`build_pptx.py` 读取该字段传给背景生成器；缺失时回退为默认灰蓝 `C5CDD4`。选色参考：
+**调性预设（mood 字段）**：每首歌根据情绪方向选择一个 mood key，写入 data.json 的 `mood` 字段。`build_pptx.py` 读取后自动解析为背景色 + 完整文字色板（通过 `scripts/pptx_palette.py` 的 `resolve_theme()`）。`mood` 优先级高于 `bg_color`——两者同时存在时以 `mood` 为准。缺省时回退为默认 `moon_white`。
 
-| 调性/风格 | 推荐色方向 | 示例 |
-|----------|-----------|------|
-| 温暖、治愈、民谣 | 暖米/玫瑰褐 | `C8B8B0` |
-| 暗黑、戏剧、摇滚 | 冷灰/石褐 | `B5AEA5` |
-| 清新、电子、轻快 | 淡蓝灰/雾蓝 | `C5CDD4` |
-| 复古、爵士、怀旧 | 暖褐/茶色 | `C4B8A8` |
-| 悲伤、抒情、慢歌 | 灰紫/暗蓝灰 | `B0AAB5` |
+| mood key | 标签 | 适用风格 | 底色 | 说明 |
+|----------|------|---------|------|------|
+| `moon_white` | 月白 | 清新、电子、轻快 | `C5CDD4` | 冷灰蓝底，安静克制，默认预设 |
+| `warm_rice` | 暖米 | 温暖、治愈、民谣 | `C8B8B0` | 暖米底，柔和亲近 |
+| `dark_ink` | 暗墨 | 暗黑、戏剧、摇滚 | `9E9790` | 深灰底，强烈对比 |
+| `faded_leaf` | 朽葉 | 复古、爵士、怀旧 | `C4B8A8` | 茶褐底，旧纸温暖 |
+| `mist_purple` | 紫苑 | 悲伤、抒情、慢歌 | `B0AAB5` | 灰紫底，沉静内敛 |
 
-选色原则：低饱和（R/G/B 通道值在 150-210 区间）、偏暖或偏冷取决于歌曲情绪方向、不抢文字层级。
+每个预设自带完整文字色板（`text_jp` / `text_furigana` / `text_romaji` / `text_cn` / `text_section` / `text_footer`），在 `pptx_palette.py` 的 `THEME_PRESETS` 中定义。这些颜色已经过 WCAG 对比度校准，不需要手动调整。
+
+如果 5 个预设不适用，也可以直接在 data.json 中写 `bg_color`（6 位十六进制，不带 `#`），此时字色通过 `palette_for_bg()` 自动推算。
 
 **全局设计**：
-- 16:9 宽屏（13.333 × 7.5 inch），Pillow 程序化纸张纹理背景（四步噪声+暗角+模糊，hash 种子保证同歌一致）
-- 统一低饱和色板（见 `scripts/pptx_palette.py`）：墨灰文字 `#1A1D24`、深灰假名 `#444444`、中灰罗马音 `#7A8088`、暖浅灰翻译 `#9A9288`、极淡段落水印 `#B0A89E`
+- 16:9 宽屏（13.333 × 7.5 inch），Pillow + numpy/scipy 七层程序化纸张纹理背景（渐变基底 → 水彩晕染 → 颜料肌理 → 和纸纤维 → 大气光池 → 柔和暗角 → 表面统一，hash 种子保证同歌一致，mood 自动匹配 warm/cool/dark/dreamy/neutral 五档参数）
+- 统一低饱和色板（见 `scripts/pptx_palette.py`）：5 套调性预设，每套自带背景色 + 完整文字色板，WCAG 对比度校准
 - 四种布局模板循环使用（top_left、mid_left、center_left、stagger），避免页面单调
 - 段落标签（[Verse 1]、[Chorus] 等）以极淡水印形式固定于左上角
+- 背景装饰字（ghost text）：每页右下角叠印当前段落名（如"Verse 1""Chorus"），字号按文本长度自适应（4 字以下 120pt → 10 字以上 64pt），颜色为背景加深 10%，硬夹在安全区内，不溢出
+- 页脚（page footer）：每页右下角 `{歌名} · {歌手} — {页码} / {总页数}`，9pt，颜色与 section 水印一致
+- 封面页：标题字号按字符数动态缩放（日文 5 字以内 72pt、英文 10 字以内 64pt），日文歌自动提取读法作为副标题，分隔线 + 专辑/年份/Tie-up 元数据行，内容块垂直居中
 - 底部安全区 0.55 inch，所有内容不得超出
 
 **日文路径**（data.json 中每行 3 元素 → 原文/罗马音/翻译）：

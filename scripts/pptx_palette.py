@@ -83,3 +83,95 @@ def palette_for_bg(bg_hex: str) -> dict[str, str]:
         "TEXT_CN": _darker_for_contrast(bg_hex, 3.0),
         "TEXT_SECTION": _darker_for_contrast(bg_hex, 2.0),
     }
+
+
+# ── Mood-based theme presets ──────────────────────────────────────────────────
+# Each preset is a complete color system calibrated for a song mood.
+# Users pick a mood key instead of hand-picking a bg_color hex.
+
+THEME_PRESETS: dict[str, dict[str, str]] = {
+    "moon_white": {
+        "label": "月白",
+        "desc": "清新/电子/轻快 — 冷灰蓝底，安静克制",
+        "bg": "C5CDD4",
+        "text_jp": "1A1D24",
+        "text_furigana": "4A4E54",
+        "text_romaji": "7A8088",
+        "text_cn": "9A9288",
+        "text_section": "B0A89E",
+        "text_footer": "8A8480",
+    },
+    "warm_rice": {
+        "label": "暖米",
+        "desc": "温暖/治愈/民谣 — 暖米底，柔和亲近",
+        "bg": "C8B8B0",
+        "text_jp": "1E1A18",
+        "text_furigana": "4E4844",
+        "text_romaji": "807870",
+        "text_cn": "9A8E84",
+        "text_section": "B0A498",
+        "text_footer": "8A8078",
+    },
+    "dark_ink": {
+        "label": "暗墨",
+        "desc": "暗黑/戏剧/摇滚 — 深灰底，强烈对比",
+        "bg": "9E9790",
+        "text_jp": "0E0D0C",
+        "text_furigana": "383430",
+        "text_romaji": "6A625C",
+        "text_cn": "8A827A",
+        "text_section": "A09890",
+        "text_footer": "706860",
+    },
+    "faded_leaf": {
+        "label": "朽葉",
+        "desc": "复古/爵士/怀旧 — 茶褐底，旧纸温暖",
+        "bg": "C4B8A8",
+        "text_jp": "1C1814",
+        "text_furigana": "4C4640",
+        "text_romaji": "7E7670",
+        "text_cn": "988E84",
+        "text_section": "AEA498",
+        "text_footer": "887E76",
+    },
+    "mist_purple": {
+        "label": "紫苑",
+        "desc": "悲伤/抒情/慢歌 — 灰紫底，沉静内敛",
+        "bg": "B0AAB5",
+        "text_jp": "18161C",
+        "text_furigana": "44414A",
+        "text_romaji": "746E7A",
+        "text_cn": "928A94",
+        "text_section": "A8A0AA",
+        "text_footer": "827A84",
+    },
+}
+
+
+def resolve_theme(mood_key: str | None, bg_color: str | None) -> tuple[str, dict[str, str]]:
+    """Resolve mood key or bg_color to a complete theme palette.
+
+    Priority: mood_key > bg_color. If mood_key matches a preset, use it.
+    Otherwise adapt from bg_color via palette_for_bg(). Falls back to moon_white.
+
+    Returns (resolved_bg_hex, text_palette_dict).
+    """
+    if mood_key and mood_key in THEME_PRESETS:
+        preset = THEME_PRESETS[mood_key]
+        return preset["bg"], {
+            "TEXT_JP": preset["text_jp"],
+            "TEXT_FURIGANA": preset["text_furigana"],
+            "TEXT_ROMAJI": preset["text_romaji"],
+            "TEXT_CN": preset["text_cn"],
+            "TEXT_SECTION": preset["text_section"],
+            "TEXT_FOOTER": preset["text_footer"],
+        }
+    if mood_key:
+        bg = mood_key.lstrip("#")
+    elif bg_color:
+        bg = bg_color.lstrip("#")
+    else:
+        bg = "C5CDD4"
+    pal = palette_for_bg(bg)
+    pal["TEXT_FOOTER"] = _darker_for_contrast(bg, 3.0)
+    return bg, pal

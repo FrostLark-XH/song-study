@@ -7,7 +7,7 @@ English: Adobe Caslon Pro Semibold main text + CN, 3–5 lines per slide.
 Layout cycles through 4 poster templates. Self-verifies on completion.
 """
 
-import sys, os, json, hashlib
+import sys, os, json, hashlib, re
 from io import BytesIO
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -16,7 +16,7 @@ from lxml import etree
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-from scripts.pptx_palette import TEXT_JP, TEXT_FURIGANA, TEXT_ROMAJI, TEXT_CN, TEXT_SECTION, rgb, palette_for_bg
+from scripts.pptx_palette import TEXT_JP, TEXT_FURIGANA, TEXT_ROMAJI, TEXT_CN, TEXT_SECTION, rgb, resolve_theme
 from scripts.pptx_background import generate_mood_background
 from scripts.pptx_furigana import tokenize, _has_kanji
 
@@ -29,6 +29,40 @@ FONT_CN = "SimSun"
 FONT_EN = "Arial"
 FONT_EN_SERIF = "Adobe Caslon Pro"
 FONT_EN_SERIF_BOLD = "Adobe Caslon Pro Semibold"
+
+# ── Typography scale ──────────────────────────────────────────────────────────
+# Named tiers mapped from guizang-ppt-skill font hierarchy discipline.
+# Serif = title/lyric (visual weight), Sans = body/annotation (readability),
+# Mono = metadata (rhythm). All sizes in pt.
+
+class TypeScale:
+    """Unified typographic scale for JP and EN lyric card paths."""
+    # JP path
+    JP_DISPLAY = 48          # cover title
+    JP_H1 = 64               # section-first-line emphasis
+    JP_BODY_MAX = 64         # 1-7 chars
+    JP_BODY_LG = 60          # 8-12 chars
+    JP_BODY_MD = 56          # 13-16 chars
+    JP_BODY_SM = 52          # 17+ chars
+    JP_FURIGANA = 13         # kana annotation above kanji
+    JP_ROMAJI = 20           # romaji typewriter line
+    JP_ROMAJI_SPACING = 1.5  # letter-spacing for typewriter feel
+    JP_CN = 17               # Chinese translation
+    JP_SECTION = 14          # section watermark label
+
+    # EN path
+    EN_DISPLAY = 48          # cover title
+    EN_BODY_XL = 42          # <=15 chars
+    EN_BODY_LG = 38          # <=25 chars
+    EN_BODY_MD = 34          # <=35 chars
+    EN_BODY_SM = 30          # <=45 chars
+    EN_BODY_XS = 28          # >45 chars
+    EN_CN = 17               # Chinese translation
+    EN_SECTION = 14          # section watermark label
+
+    # Shared
+    FOOTER = 9               # page footer metadata
+    FOOTER_CN = 10           # Chinese text in footer (SimSun needs +1pt vs Arial)
 
 # ── Slide geometry ────────────────────────────────────────────────────────────
 
@@ -44,14 +78,49 @@ def _max_content_w(x_margin: int) -> int:
     """Max textbox width at x_margin, keeping right edge within 85% of slide."""
     return SLIDE_SAFE_RIGHT - x_margin
 
-# ── Font sizes ────────────────────────────────────────────────────────────────
+# ── Font sizes (from TypeScale) ────────────────────────────────────────────────
 
-FURIGANA_SIZE_PT = 13
-ROMAJI_SIZE_PT = 20
-ROMAJI_SPACING_PT = 1.5     # typewriter tracking
-CN_SIZE_PT = 17
-SECTION_SIZE_PT = 14
+FURIGANA_SIZE_PT = TypeScale.JP_FURIGANA
+ROMAJI_SIZE_PT = TypeScale.JP_ROMAJI
+ROMAJI_SPACING_PT = TypeScale.JP_ROMAJI_SPACING
+CN_SIZE_PT = TypeScale.JP_CN
+SECTION_SIZE_PT = TypeScale.JP_SECTION
+FOOTER_SIZE_PT = TypeScale.FOOTER
+FOOTER_CN_SIZE_PT = TypeScale.FOOTER_CN
 
+# ── Footer ────────────────────────────────────────────────────────────────────
+
+TEXT_FOOTER = "8A8480"  # fallback, overridden per-build by resolve_theme()
+
+FOOTER_BOTTOM_EMU = int(Pt(10))  # distance from slide bottom edge
+FOOTER_HEIGHT_EMU = int(Pt(18))  # text frame height
+
+
+def _add_page_footer(slide, song_title: str, artist: str,
+                     page_num: int, total_pages: int):
+    """Magazine-style page footer with song title, artist, page number.
+
+    Mirrors guizang-ppt-skill's .chrome / .foot metadata convention —
+    consistent across all slides for a bound-publication feel.
+    """
+    footer_text = f"{song_title}  ·  {artist}  —  {page_num} / {total_pages}"
+    tf = slide.shapes.add_textbox(
+        LEFT_MARGIN,
+        SLIDE_H - FOOTER_BOTTOM_EMU - FOOTER_HEIGHT_EMU,
+        _max_content_w(LEFT_MARGIN),
+        FOOTER_HEIGHT_EMU,
+    )
+    tf.text_frame.word_wrap = False
+    p = tf.text_frame.paragraphs[0]
+    p.alignment = PP_ALIGN.RIGHT
+    p.space_before = Pt(0)
+    p.space_after = Pt(0)
+    _add_run(p, footer_text, FONT_CN, FONT_EN,
+             size=Pt(FOOTER_CN_SIZE_PT), color=TEXT_FOOTER)
+
+
+# ── Ghost text ────────────────────────────────────────────────────────────────
+# Giant subtle watermark text as background decoration.
 # ── Spacing ───────────────────────────────────────────────────────────────────
 
 FURIGANA_ABOVE_BASE = int(Pt(1))
@@ -464,8 +533,10 @@ def _pair_lines(lines: list) -> list[list]:
 
 # ── Slide background helpers ──────────────────────────────────────────────────
 
-def _add_slide_bg_and_section(slide, bg_buf, section_name: str):
-    """Add paper background and optional section watermark to a slide."""
+def _add_slide_bg_and_section(slide, bg_buf, section_name: str,
+                               song_title: str = "", artist: str = "",
+                               page_num: int = 0, total_pages: int = 0):
+    """Add paper background, section watermark, and page footer."""
     bg_buf.seek(0)
     slide.shapes.add_picture(bg_buf, 0, 0, SLIDE_W, SLIDE_H)
     if section_name:
@@ -474,14 +545,19 @@ def _add_slide_bg_and_section(slide, bg_buf, section_name: str):
         tf_s.text_frame.word_wrap = True
         _add_run(tf_s.text_frame.paragraphs[0], section_name,
                  FONT_JP, FONT_EN, size=Pt(SECTION_SIZE_PT), color=TEXT_SECTION)
+    if song_title and total_pages > 0:
+        _add_page_footer(slide, song_title, artist, page_num, total_pages)
 
 
 # ── Slide layout ──────────────────────────────────────────────────────────────
 
 def _layout_and_render_slide(slide, paired_lines, bg_buf, section_name,
-                             layout_idx: int, overflow_warnings: list[str] | None = None):
+                             layout_idx: int, overflow_warnings: list[str] | None = None,
+                             song_title: str = "", artist: str = "",
+                             page_num: int = 0, total_pages: int = 0):
     """Layout and render a slide using one of 4 composition templates."""
-    _add_slide_bg_and_section(slide, bg_buf, section_name)
+    _add_slide_bg_and_section(slide, bg_buf, section_name,
+                              song_title, artist, page_num, total_pages)
 
     layout = LAYOUTS[layout_idx % len(LAYOUTS)]
     is_paired = len(paired_lines) == 2
@@ -571,9 +647,12 @@ _EN_CN_GAP = int(Pt(4))
 
 
 def _layout_and_render_english_slide(slide, lines, bg_buf, section_name,
-                                      layout_idx: int, overflow_warnings: list[str] | None = None):
+                                      layout_idx: int, overflow_warnings: list[str] | None = None,
+                                      song_title: str = "", artist: str = "",
+                                      page_num: int = 0, total_pages: int = 0):
     """Layout and render an English lyric slide using 4 poster templates."""
-    _add_slide_bg_and_section(slide, bg_buf, section_name)
+    _add_slide_bg_and_section(slide, bg_buf, section_name,
+                              song_title, artist, page_num, total_pages)
 
     layout = LAYOUTS[layout_idx % len(LAYOUTS)]
     n_lines = len(lines)
@@ -741,7 +820,7 @@ def _verify_build(d: dict, slide_count: int, is_japanese: bool,
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def build_pptx(json_path: str, out_path: str | None = None):
-    global TEXT_JP, TEXT_FURIGANA, TEXT_ROMAJI, TEXT_CN, TEXT_SECTION
+    global TEXT_JP, TEXT_FURIGANA, TEXT_ROMAJI, TEXT_CN, TEXT_SECTION, TEXT_FOOTER
 
     with open(json_path, "r", encoding="utf-8") as f:
         d = json.load(f)
@@ -756,41 +835,169 @@ def build_pptx(json_path: str, out_path: str | None = None):
     fl = d.get("lyric_sections", [])
     is_japanese = bool(fl and fl[0][1] and len(fl[0][1][0]) == 3)
 
-    seed = int(hashlib.md5(d.get("title", "song").encode()).hexdigest()[:8], 16) % 10000
-    bg_color = d.get("bg_color", "C5CDD4")
-    mood = d.get("mood")
-    bg_buf = generate_mood_background(seed=seed, base_color=bg_color, mood=mood)
+    # Extract metadata for footer
+    song_title = d.get("title", "").replace("歌曲学习：", "")
+    artist = ""
+    if d.get("info_rows"):
+        for row in d["info_rows"]:
+            if row[0] == "演唱者":
+                artist = row[1]
+                break
 
-    # Adapt text palette to background for readability
-    pal = palette_for_bg(bg_color)
+    # Resolve color theme — mood key or bg_color from data.json
+    bg_color, pal = resolve_theme(d.get("mood"), d.get("bg_color"))
     TEXT_JP = pal["TEXT_JP"]
     TEXT_FURIGANA = pal["TEXT_FURIGANA"]
     TEXT_ROMAJI = pal["TEXT_ROMAJI"]
     TEXT_CN = pal["TEXT_CN"]
     TEXT_SECTION = pal["TEXT_SECTION"]
+    TEXT_FOOTER = pal.get("TEXT_FOOTER", "8A8480")
+
+    seed = int(hashlib.md5(d.get("title", "song").encode()).hexdigest()[:8], 16) % 10000
+    bg_buf = generate_mood_background(seed=seed, base_color=bg_color)
 
     prs = Presentation()
     prs.slide_width = SLIDE_W
     prs.slide_height = SLIDE_H
 
-    # Title slide
-    title = d.get("title", "").replace("歌曲学习：", "")
+    # Pre-count total pages for footer numbering
+    total_pages = 1  # title slide
+    for sname, lines in fl:
+        if not lines:
+            continue
+        if is_japanese:
+            total_pages += len(_pair_lines(lines))
+        else:
+            total_pages += len(_group_english_lines(lines))
+
+    # ── Title slide ──────────────────────────────────────────────────────────
     s0 = prs.slides.add_slide(prs.slide_layouts[6])
     bg_buf.seek(0)
     s0.shapes.add_picture(bg_buf, 0, 0, SLIDE_W, SLIDE_H)
-    tf0 = s0.shapes.add_textbox(LEFT_MARGIN, int(Inches(2.3)),
-                                _max_content_w(LEFT_MARGIN), int(Inches(3.5)))
+
+    # Extract metadata from info_rows
+    info = {row[0]: row[1] for row in d.get("info_rows", [])}
+    artist = info.get("演唱者", info.get("作曲", ""))
+    album = info.get("所属专辑", info.get("所属作品", ""))
+    release = info.get("发行日期", info.get("首演年份", ""))
+    tieup = info.get("Tie-up", "")
+    # Subtitle: reading for JP, Chinese title for EN
+    subtitle = ""
+    if is_japanese:
+        song_name_row = info.get("歌曲名", "")
+        if "（" in song_name_row:
+            # Extract reading from "騙シ愛（だましあい / Damashiai）"
+            paren = song_name_row.split("（", 1)[1].rstrip("）")
+            subtitle = paren.split(" / ")[0]  # hiragana reading
+    else:
+        # Check if there's a Chinese title in the song name
+        song_name_row = info.get("歌曲名", "")
+        if "，意为" in song_name_row:
+            pass  # skip French explanation
+        # Use the title itself — EN songs get the EN title as main, no sub
+
+    # Build metadata line: album + year, or tie-up for JP songs
+    meta_parts = []
+    if album and "未收" not in album:
+        meta_parts.append(album)
+    if release:
+        # Extract year: "2025年4月14日" → "2025", "1990年" → "1990"
+        year_m = re.search(r"(\d{4})", release)
+        if year_m:
+            meta_parts.append(year_m.group(1))
+    if tieup and is_japanese:
+        # Shorten: "TBS 日曜劇場『キャスター』主題歌" → "TBS『キャスター』主題歌"
+        short = tieup.replace("日曜劇場", "").replace("（", "").replace("）", "")
+        if len(short) > 30:
+            short = short[:28] + "…"
+        meta_parts.append(short)
+
+    # Top label
+    tf_s = s0.shapes.add_textbox(
+        int(Inches(0.4)), int(Pt(16)), int(Inches(4)), int(Pt(24)))
+    _add_run(tf_s.text_frame.paragraphs[0], "Lyric Cards",
+             FONT_JP, FONT_EN, size=Pt(SECTION_SIZE_PT), color=TEXT_SECTION)
+
+    # Title font size: scale by length
+    title_n = len(song_title)
+    if is_japanese:
+        if title_n <= 5:   title_fs = 72
+        elif title_n <= 10: title_fs = 64
+        elif title_n <= 15: title_fs = 56
+        else:              title_fs = 48
+    else:
+        if title_n <= 10:  title_fs = 64
+        elif title_n <= 20: title_fs = 54
+        else:              title_fs = 44
+
+    # Vertical layout: center the content block
+    line_count = 1  # title
+    if subtitle: line_count += 1
+    line_count += 1  # separator
+    if artist: line_count += 1
+    if meta_parts: line_count += 1
+    block_h = (line_count * int(Pt(56))) + int(Pt(20))
+    y_start = max(int(Inches(1.5)), (SLIDE_H - block_h) // 2)
+
+    tf0 = s0.shapes.add_textbox(LEFT_MARGIN, y_start,
+                                _max_content_w(LEFT_MARGIN), block_h + int(Pt(40)))
     tf0.text_frame.word_wrap = True
-    _add_run(tf0.text_frame.paragraphs[0], title,
+
+    # Title
+    p_title = tf0.text_frame.paragraphs[0]
+    p_title.alignment = PP_ALIGN.LEFT
+    p_title.space_after = Pt(4)
+    _add_run(p_title, song_title,
              FONT_JP if is_japanese else FONT_EN_SERIF_BOLD, FONT_EN,
-             size=Pt(48), color=TEXT_JP)
-    if d.get("info_rows"):
-        ar = [r for r in d["info_rows"] if r[0] == "演唱者"]
-        if ar:
-            pa = tf0.text_frame.add_paragraph()
-            pa.alignment = PP_ALIGN.LEFT
-            pa.space_before = Pt(12)
-            _add_run(pa, ar[0][1], FONT_CN, FONT_EN, size=Pt(20), color=TEXT_CN)
+             size=Pt(title_fs), color=TEXT_JP)
+
+    # Subtitle (reading / CN title)
+    if subtitle:
+        p_sub = tf0.text_frame.add_paragraph()
+        p_sub.alignment = PP_ALIGN.LEFT
+        p_sub.space_before = Pt(2)
+        p_sub.space_after = Pt(2)
+        _add_run(p_sub, subtitle, FONT_ROMAJI if is_japanese else FONT_CN,
+                 FONT_EN, size=Pt(22), color=TEXT_ROMAJI)
+
+    # Separator rule — thin line
+    p_sep = tf0.text_frame.add_paragraph()
+    p_sep.alignment = PP_ALIGN.LEFT
+    p_sep.space_before = Pt(18)
+    p_sep.space_after = Pt(14)
+    sep_run = p_sep.add_run()
+    sep_run.text = "─" * 28
+    sep_run.font.size = Pt(10)
+    sep_run.font.color.rgb = rgb(TEXT_SECTION)
+    sep_run.font.name = FONT_EN
+
+    # Artist
+    if artist:
+        p_art = tf0.text_frame.add_paragraph()
+        p_art.alignment = PP_ALIGN.LEFT
+        p_art.space_after = Pt(2)
+        _add_run(p_art, artist, FONT_CN, FONT_EN, size=Pt(20), color=TEXT_CN)
+
+    # Metadata line
+    if meta_parts:
+        p_meta = tf0.text_frame.add_paragraph()
+        p_meta.alignment = PP_ALIGN.LEFT
+        p_meta.space_before = Pt(6)
+        _add_run(p_meta, " · ".join(meta_parts), FONT_CN, FONT_EN,
+                 size=Pt(14), color=TEXT_SECTION)
+
+    # Footer (no page number on cover)
+    footer_text = f"{song_title}  ·  {artist}" if artist else song_title
+    tf_f = s0.shapes.add_textbox(
+        LEFT_MARGIN, SLIDE_H - FOOTER_BOTTOM_EMU - FOOTER_HEIGHT_EMU,
+        _max_content_w(LEFT_MARGIN), FOOTER_HEIGHT_EMU)
+    tf_f.text_frame.word_wrap = False
+    pf = tf_f.text_frame.paragraphs[0]
+    pf.alignment = PP_ALIGN.RIGHT
+    pf.space_before = Pt(0)
+    pf.space_after = Pt(0)
+    _add_run(pf, footer_text, FONT_CN, FONT_EN,
+             size=Pt(FOOTER_CN_SIZE_PT), color=TEXT_FOOTER)
 
     # Lyric slides
     slide_idx = 0
@@ -805,14 +1012,18 @@ def build_pptx(json_path: str, out_path: str | None = None):
             for group in paired:
                 slide = prs.slides.add_slide(prs.slide_layouts[6])
                 _layout_and_render_slide(slide, group, bg_buf, sname, slide_idx,
-                                         overflow_warnings)
+                                         overflow_warnings,
+                                         song_title, artist,
+                                         slide_idx + 1, total_pages)
                 slide_idx += 1
         else:
             grouped = _group_english_lines(lines)
             for group in grouped:
                 slide = prs.slides.add_slide(prs.slide_layouts[6])
                 _layout_and_render_english_slide(slide, group, bg_buf, sname, slide_idx,
-                                                  overflow_warnings)
+                                                  overflow_warnings,
+                                                  song_title, artist,
+                                                  slide_idx + 1, total_pages)
                 slide_idx += 1
 
     prs.save(out_path)
