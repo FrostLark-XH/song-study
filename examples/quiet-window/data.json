@@ -1,0 +1,254 @@
+{
+  "schema_version": "2.1",
+  "language": "ja",
+  "title": "まどのあかり",
+  "info_rows": [
+    [
+      "歌曲名",
+      "まどのあかり"
+    ],
+    [
+      "演唱者",
+      "自拟示例；无录音"
+    ]
+  ],
+  "lyric_sections": [
+    [
+      "[Verse]",
+      [
+        {
+          "id": "window-01",
+          "jp": "まどをあける",
+          "romaji": "Mado wo akeru",
+          "zh": "推开窗。"
+        },
+        {
+          "id": "window-02",
+          "jp": "あめはやんだ",
+          "romaji": "Ame wa yanda",
+          "zh": "雨停了。"
+        },
+        {
+          "id": "window-03",
+          "jp": "きみのこえがのこる",
+          "romaji": "Kimi no koe ga nokoru",
+          "zh": "你的声音还留在这里。"
+        }
+      ]
+    ],
+    [
+      "[Outro]",
+      [
+        {
+          "id": "window-04",
+          "jp": "もうすこしここにいる",
+          "romaji": "Mou sukoshi koko ni iru",
+          "zh": "再在这里待一会儿。"
+        },
+        {
+          "id": "window-05",
+          "jp": "おちゃがさめるまで",
+          "romaji": "Ocha ga sameru made",
+          "zh": "等到茶凉下来。"
+        },
+        {
+          "id": "window-06",
+          "jp": "ひとりでもだいじょうぶ",
+          "romaji": "Hitori demo daijoubu",
+          "zh": "一个人也没关系。"
+        }
+      ]
+    ]
+  ],
+  "sources_lyrics": [],
+  "sources_info": [],
+  "vocab_table": [],
+  "grammar_points": [],
+  "culture_notes": [],
+  "singing_tips": [],
+  "visual_profile": {
+    "renderVersion": 3,
+    "cover": {
+      "title": "まどのあかり",
+      "artist": "SELF-AUTHORED EXAMPLE",
+      "typeface": "serif",
+      "background": "F2EBDD",
+      "ink": "273A32",
+      "secondary": "46584D"
+    },
+    "previewPageIds": [
+      "open-window",
+      "rain-memory",
+      "tea-and-alone"
+    ],
+    "director": {
+      "version": 1,
+      "source_fingerprint": "4862bd4cd8d22c01",
+      "brief": {
+        "premise": "叙述者推窗看雨停，却仍停留在一个人的声音里。",
+        "emotional_arc": "从外界静下来，到容许自己停留，最后接受独处。",
+        "evidence_basis": "lyrics_only"
+      },
+      "system": {
+        "concept": "以窗外转晴和室内等待组织一段安静的告别。",
+        "palette_logic": "暖纸色表示室内停留；末段转灰绿，表示接受而非爆发。",
+        "typography_logic": "衬线的细节保留亲近的书页感；不作巨大呼喊。",
+        "composition_logic": "开窗独页，接着两句承接；最后三个短句作为一次完整回应。",
+        "motif_logic": "不加窗框插画，靠留白与静态重心表达空房。",
+        "avoid": [
+          "霓虹",
+          "强冲击倾斜",
+          "副歌式爆亮"
+        ]
+      },
+      "timeline": [
+        {
+          "id": "outside-to-memory",
+          "line_ids": [
+            "window-01",
+            "window-02",
+            "window-03"
+          ],
+          "state": "外部安静，记忆仍在",
+          "visual_shift": "开场留白后转向室内凝视",
+          "reason": "雨停与声音残留构成外部/内部的对照。"
+        },
+        {
+          "id": "acceptance",
+          "line_ids": [
+            "window-04",
+            "window-05",
+            "window-06"
+          ],
+          "state": "容许停留，接受独处",
+          "visual_shift": "保持衬线与左重心，底色轻转灰绿",
+          "reason": "茶凉是缓慢的时间，末句是安静确认。"
+        }
+      ]
+    }
+  },
+  "visual_assets": {
+    "pages": [
+      {
+        "id": "open-window",
+        "line_ids": [
+          "window-01"
+        ],
+        "phase_id": "outside-to-memory",
+        "role": "introduce",
+        "reason": "推窗是独立动作，给它一页呼吸。",
+        "transition": "从封面进入一个简单动作。",
+        "layout": "left",
+        "typeface": "serif",
+        "background": "F2EBDD",
+        "ink": "273A32",
+        "secondary": "46584D",
+        "accent": "816C45",
+        "motifs": [],
+        "vertical": 0.55
+      },
+      {
+        "id": "rain-memory",
+        "line_ids": [
+          "window-02",
+          "window-03"
+        ],
+        "phase_id": "outside-to-memory",
+        "role": "contrast",
+        "reason": "雨已经停止，声音还在，两句一起读出对照。",
+        "transition": "保持文字起点，增加第二个句子形成内外对照。",
+        "layout": "left",
+        "typeface": "serif",
+        "background": "F2EBDD",
+        "ink": "273A32",
+        "secondary": "46584D",
+        "accent": "816C45",
+        "motifs": [],
+        "vertical": 0.48
+      },
+      {
+        "id": "tea-and-alone",
+        "line_ids": [
+          "window-04",
+          "window-05",
+          "window-06"
+        ],
+        "phase_id": "acceptance",
+        "role": "resolve",
+        "reason": "停留、茶凉、接受独处构成一个回应，不拆成三个口号。",
+        "transition": "密度温和增加，转灰绿收束；没有假设录音高潮。",
+        "layout": "left",
+        "typeface": "serif",
+        "background": "E5E9DC",
+        "ink": "273A32",
+        "secondary": "46584D",
+        "accent": "816C45",
+        "motifs": [],
+        "vertical": 0.42
+      }
+    ]
+  },
+  "verification": {
+    "checks": {
+      "song_version": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "lyric_text": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "reading_translation": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "structure": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "render": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "visual": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      }
+    },
+    "lines": {
+      "window-01": {
+        "status": "待核验",
+        "sources": []
+      },
+      "window-02": {
+        "status": "待核验",
+        "sources": []
+      },
+      "window-03": {
+        "status": "待核验",
+        "sources": []
+      },
+      "window-04": {
+        "status": "待核验",
+        "sources": []
+      },
+      "window-05": {
+        "status": "待核验",
+        "sources": []
+      },
+      "window-06": {
+        "status": "待核验",
+        "sources": []
+      }
+    },
+    "lyrics": {
+      "sources": [],
+      "text_compared": {
+        "compared": 0,
+        "matched": 0,
+        "note": "自拟文本，不冒充网络来源比对。"
+      }
+    },
+    "fingerprint": "4862bd4cd8d22c01"
+  }
+}

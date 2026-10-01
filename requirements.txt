@@ -1,0 +1,21 @@
+# song-study 运行依赖
+# 安装：pip install -r requirements.txt
+
+# ===== 核心（MD + DOCX + PPTX 三格式生成必需）=====
+python-docx
+python-pptx
+numpy
+scipy
+Pillow
+SudachiPy
+sudachidict-core
+jaconv
+lxml
+
+# ===== 可选（预览渲染 / 缩略图，不生成三格式可不装）=====
+# DOCX 预览：Word COM 导出 PDF（render_docx.py，仅 Windows）
+pywin32; sys_platform == "win32"
+# DOCX PDF 转 PNG（render_docx.py）
+PyMuPDF
+# PPT 缩略图：render_preview.py 优先 PowerPoint COM，无则回退 LibreOffice headless
+#   （LibreOffice 为外部程序，非 pip 包；无 PowerPoint 时需自行安装 soffice）

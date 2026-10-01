@@ -1,0 +1,269 @@
+{
+  "schema_version": "2.1",
+  "language": "ja",
+  "title": "こえをあげろ",
+  "info_rows": [
+    [
+      "歌曲名",
+      "こえをあげろ"
+    ],
+    [
+      "演唱者",
+      "自拟示例；无录音"
+    ]
+  ],
+  "lyric_sections": [
+    [
+      "[Intro]",
+      [
+        {
+          "id": "city-01",
+          "jp": "声を上げろ",
+          "romaji": "Koe wo agero",
+          "zh": "放声喊出来。"
+        }
+      ]
+    ],
+    [
+      "[Verse]",
+      [
+        {
+          "id": "city-02",
+          "jp": "赤い信号",
+          "romaji": "Akai shingou",
+          "zh": "红色的信号灯。"
+        },
+        {
+          "id": "city-03",
+          "jp": "息を止めるな",
+          "romaji": "Iki wo tomeru na",
+          "zh": "别屏住呼吸。"
+        },
+        {
+          "id": "city-04",
+          "jp": "線を越えてゆけ",
+          "romaji": "Sen wo koete yuke",
+          "zh": "越过那道线，向前走。"
+        }
+      ]
+    ],
+    [
+      "[Refrain]",
+      [
+        {
+          "id": "city-05",
+          "jp": "声を上げろ",
+          "romaji": "Koe wo agero",
+          "zh": "放声喊出来。"
+        },
+        {
+          "id": "city-06",
+          "jp": "ここから始める",
+          "romaji": "Koko kara hajimeru",
+          "zh": "就从这里开始。"
+        }
+      ]
+    ]
+  ],
+  "sources_lyrics": [],
+  "sources_info": [],
+  "vocab_table": [],
+  "grammar_points": [],
+  "culture_notes": [],
+  "singing_tips": [],
+  "visual_profile": {
+    "renderVersion": 3,
+    "cover": {
+      "title": "こえをあげろ",
+      "artist": "SELF-AUTHORED EXAMPLE",
+      "typeface": "sans",
+      "background": "1E1918",
+      "ink": "F7EEE2",
+      "secondary": "D0C1B4"
+    },
+    "previewPageIds": [
+      "first-call",
+      "cross-the-line",
+      "second-call"
+    ],
+    "director": {
+      "version": 1,
+      "source_fingerprint": "aed74fefd5865bde",
+      "brief": {
+        "premise": "叙述者以命令句敦促自己从被阻挡转向行动。",
+        "emotional_arc": "先发出号令，经过信号/屏息/越线，末尾把号令变成自己的开始。",
+        "evidence_basis": "lyrics_only"
+      },
+      "system": {
+        "concept": "把阻挡与跨越做成文字重心向前移动的宣言。",
+        "palette_logic": "暗底保留压力，末段亮底像走出阻挡；暖红仅作为计划强调色，当前不独立绘制。",
+        "typography_logic": "无衬线的直接轮廓配合命令句；不沿用安静书页的字体。",
+        "composition_logic": "独句左侧号令，三句递进缩进，收束居中站定。",
+        "motif_logic": "不增加城市夜景或粒子；文字密度和重心承担动作。",
+        "avoid": [
+          "柔软水彩",
+          "泛用蓝白梦想色板",
+          "无依据的音乐卡点"
+        ]
+      },
+      "timeline": [
+        {
+          "id": "call",
+          "line_ids": [
+            "city-01"
+          ],
+          "state": "发出号令",
+          "visual_shift": "暗底与单句建立压力",
+          "reason": "命令句承担开场动机。"
+        },
+        {
+          "id": "cross",
+          "line_ids": [
+            "city-02",
+            "city-03",
+            "city-04"
+          ],
+          "state": "由阻挡到越线",
+          "visual_shift": "三句由左向右缩进，但保持暗底",
+          "reason": "信号、呼吸与越线是连续行动。"
+        },
+        {
+          "id": "own-start",
+          "line_ids": [
+            "city-05",
+            "city-06"
+          ],
+          "state": "号令成为自我确认",
+          "visual_shift": "亮底居中，稳定收束",
+          "reason": "重复的号令由末句开始行动赋予新语境。"
+        }
+      ]
+    }
+  },
+  "visual_assets": {
+    "pages": [
+      {
+        "id": "first-call",
+        "line_ids": [
+          "city-01"
+        ],
+        "phase_id": "call",
+        "role": "introduce",
+        "reason": "把开场命令独立成页，建立本曲动机。",
+        "transition": "从封面延续暗底，进入直接命令。",
+        "layout": "left",
+        "typeface": "sans",
+        "background": "1E1918",
+        "ink": "F7EEE2",
+        "secondary": "D0C1B4",
+        "accent": "E35D45",
+        "motifs": [],
+        "font_size": 88,
+        "vertical": 0.4
+      },
+      {
+        "id": "cross-the-line",
+        "line_ids": [
+          "city-02",
+          "city-03",
+          "city-04"
+        ],
+        "phase_id": "cross",
+        "role": "build",
+        "reason": "三个短句构成阻挡到越线的动作链。",
+        "transition": "保持暗底，以后续句缩进增加向前的重心。",
+        "layout": "stagger",
+        "typeface": "sans",
+        "background": "1E1918",
+        "ink": "F7EEE2",
+        "secondary": "D0C1B4",
+        "accent": "E35D45",
+        "motifs": [],
+        "vertical": 0.4
+      },
+      {
+        "id": "second-call",
+        "line_ids": [
+          "city-05",
+          "city-06"
+        ],
+        "phase_id": "own-start",
+        "role": "resolve",
+        "reason": "重复号令和开始行动一起呈现，完成态度转变。",
+        "transition": "由暗转亮、由移动变居中，回收开场号令。",
+        "layout": "center",
+        "typeface": "sans",
+        "background": "F4EEE4",
+        "ink": "301C19",
+        "secondary": "60423A",
+        "accent": "AD3D29",
+        "motifs": [],
+        "repeat_of": "first-call",
+        "repeat_reason": "相同原文的第二次出现获得自我行动的新语境，保留语句但改为亮底居中。"
+      }
+    ]
+  },
+  "verification": {
+    "checks": {
+      "song_version": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "lyric_text": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "reading_translation": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "structure": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "render": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "visual": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      }
+    },
+    "lines": {
+      "city-01": {
+        "status": "待核验",
+        "sources": []
+      },
+      "city-02": {
+        "status": "待核验",
+        "sources": []
+      },
+      "city-03": {
+        "status": "待核验",
+        "sources": []
+      },
+      "city-04": {
+        "status": "待核验",
+        "sources": []
+      },
+      "city-05": {
+        "status": "待核验",
+        "sources": []
+      },
+      "city-06": {
+        "status": "待核验",
+        "sources": []
+      }
+    },
+    "lyrics": {
+      "sources": [],
+      "text_compared": {
+        "compared": 0,
+        "matched": 0,
+        "note": "自拟文本，不冒充网络来源比对。"
+      }
+    },
+    "fingerprint": "aed74fefd5865bde"
+  }
+}

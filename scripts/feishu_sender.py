@@ -119,7 +119,7 @@ if __name__ == "__main__":
     app_id, app_secret = _read_config()
     chat_id = _find_chat_id()
     token = get_token(app_id, app_secret)
-    print(f"[AUTH] token={token[:20]}... chat_id={chat_id}")
+    print("[AUTH] authenticated")
 
     for fp in files:
         fk = upload_file(token, fp)

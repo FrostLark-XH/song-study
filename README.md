@@ -1,63 +1,61 @@
 # song-study
 
-一首歌来到你面前的时候，它已经走过了很长的路。词曲作者的深夜、录音棚里的反复、混音师耳中残响的余韵——而你听到的，是这条路的终点。这个 skill 想做的，是陪你往回走一段。
+从同一个 `data.json` 生成 Markdown 学习资料、Word 文档和可编辑歌词 PPT。歌词来源、版本、读音翻译及六项核验状态记录在数据中；生成脚本不会自动证明来源或语言正确。
 
-嘛，说人话就是：你跟 Claude 说一句"学一下 群青"，它会把歌词一字不漏地找来、多源交叉比对、每句标上罗马音和中文翻译，接着拆出里面值得学的词汇和语法点，分析演唱时气口和情绪该怎么走——最后产出三样东西：一份呼吸感排版的 Markdown、一份带色彩语义系统的 Word 文档、一套低饱和旧纸张质感的歌词海报 PPT。
+## 安装与生成
 
-## 你能做什么
-
-对着 Claude 说"这首歌怎么唱"，后面跟歌名和歌手名就好。日文的、英文的、中文的，都可以。它自己会判断语言、自己去找歌词、自己决定走哪条排版路径。
-
-具体的触发方式大抵是这些：「学歌」「学唱」「帮我扒歌词」「学一下 Ado 的 唱」「最近在听 YOASOBI」——哪怕只是随口提一句在听的歌，它也会认真对待，因为许是你真的想深入了解。
-
-日文歌的体验是最完整的：假名注音浮在汉字上方、明朝体压画面、罗马音用打字机字体做辅助标注——像一张精心排过的日系文艺海报。英文歌走 Caslon 衬线体，同样克制干净。中文歌跳过了语言学习模块，但背景故事和演唱技巧一样不缺。
-
-## 你能得到什么
-
-每首歌一个文件夹，里面三份文件。
-
-Markdown 版适合在手机或电脑上翻阅——标题下有分隔线、段落之间有呼吸、引文有退格、校验信息有绿色的勾。读起来不累。
-
-Word 版是拿来打印的。每种信息类型有自己的表头颜色：基本信息的淡蓝、歌词的暖米、词汇的淡绿、语法的淡紫、演唱技巧的暖金——不是装饰，是让你翻到哪里一眼就知道在看什么。
-
-PPT 版是纯歌词卡片，16:9 宽屏海报风格。背景不是均匀色块——七层管线叠出来的：方向性渐变、水彩晕染、和纸纤维、大气光池——每首歌的底色根据调性自动选定，文字色自适应到 WCAG 可读标准。一页一两句歌词，像翻一本安静的小册子。
-
-## 装起来
+保留完整文件夹：四个 `build_*.py`、`scripts/`、`references/` 和文档都要一起复制。不要只替换 SKILL.md。生成脚本需 Python 3.10+，可选飞书发送脚本使用 tomllib，需 3.11+。
 
 ```bash
-git clone https://github.com/FrostLark-XH/song-study.git
-cp SKILL.md ~/.claude/skills/song-study/SKILL.md
-cp -r scripts/ ~/.claude/skills/song-study/scripts/
-cp -r references/ ~/.claude/skills/song-study/references/
-pip install python-docx sudachipy sudachidict-core scipy
+pip install -r requirements.txt
+python build_all.py "<song-dir>/data.json"
+python scripts/validate.py "<song-dir>/data.json" "<song-dir>"
 ```
 
-PPT 那部分依赖几个额外的库——numpy、scipy、Pillow、python-pptx、SudachiPy。如果不需要 PPT，只装 python-docx 就够了，Markdown 和 Word 两条路径不依赖那些。
+产物写在歌曲文件夹中。只改歌词内容时编辑 `data.json`，随后重新生成；不手工维护三份不同内容。
 
-歌曲数据默认存在 `E:/song-study/`，想改路径的话设一个 `SONG_STUDY_DATA` 环境变量就好。PPT 的 mood 背景系统会自动从歌曲的 bg_color 判断调性，也可以在 data.json 里手动指定 warm/cool/dark/dreamy/neutral。
+## 设计顺序
 
-## 这个 skill 在意什么
+先按 [视觉设计方法](references/visual-directing.md) 写歌曲理解、美术设定和段落视觉脚本，起草格式见 [视觉脚本格式](references/visual-script-template.md)。颜色、文字与留白可独立构成画面；符号须经过筛选并规定出现/退场。新歌不默认采用场景版，也不要求每页有图。既有 examples 仅作接口示例，不是所有歌曲的画风。
 
-歌词不能出错。每一首歌的歌词都经过至少两个来源的交叉比对——Genius、维基百科、百度百科、uta-net——有出入的地方优先信官方来源，实在无法确认的，大大方方标上 ⚠️。
+## PPT v3
 
-翻译要忠实，不是要优美。先让人看懂原句在说什么，再说好不好唱。罗马音要能直接跟唱，不是语言学研究。
+新日语 PPT 可用 `visual_profile.renderVersion: 3` 和 `visual_assets.pages`。先按 [歌曲视觉导演](references/visual-directing.md) 理解歌曲和安排情绪进程，再按 [PPTX-DESIGN.md](PPTX-DESIGN.md) 写逐页分镜。每页明确行 ID、作用、前后关系、构图、字体类型、颜色与设计理由。新方案使用 director 契约；每页按语义取1–3条演唱行。无此开关的旧数据继续用原 L1–L8。
 
-字体只用系统自带的。宋体、MS Mincho、Arial——这些字体内置在每台电脑里，字符覆盖最完整，不会出现打开文档发现缺字的情况。Noto CJK 和思源系列虽然好看，但装了这个 skill 的人不一定有。
+```bash
+python build_pptx.py "<song-dir>/data.json"
+python build_all.py "<song-dir>/data.json" --preview
+python scripts/render_preview.py "<deck.pptx>" --output "<montage.png>"
+```
 
-设计不是随便加的。每一条边框、每一种颜色、每一个缩进——都对应一种信息类型。不是"好看就行"，是"扫一眼就知道你在看什么"。
+`build_all --preview` 只写 `_preview/` 下的抽样 PPT，保留完整成品。最终检查要渲染完整 PPT，并查看逐页图片；本次渲染回执包含页数、后端、PPT 哈希，避免混用旧预览。
 
-## 示例
+PPT 渲染需要 Windows PowerPoint COM 或已安装的 LibreOffice `soffice`。字体检测支持 Windows Fonts 与 Fontconfig。推荐安装 Noto Serif CJK JP、Noto Sans CJK JP、Noto Sans CJK SC；罗马音使用已安装的等宽字体。没有可用字体会明确报错。字体不嵌入 PPT，不同机器可能换字体；交付 PDF 可固定当前预览外观。Word 字体替换由 Word/渲染软件负责。
 
-仓库里放了两首成品，可以直接翻看——
+## 校验与边界
 
-騙シ愛（tuki.）是日文路径的典型：三列歌词对照、假名注音、语法拆解、演唱气口标注——一份完整的学习资料该有的样子。
+```bash
+python scripts/test_line_ids.py
+python scripts/test_editorial.py
+python scripts/test_visual_plan.py
+```
 
-Façade（Jekyll & Hyde 音乐剧）是英文路径：Caslon 衬线体排版、逐短句拆分、社会讽刺主题的文化背景——音乐剧选段的学习方式。
+- `validate.py` 检查数据和产物覆盖，error 阻断，warning 需阅读。来源引用关联与实际文本比对是独立指标。
+- v3 额外检查逐页覆盖、顺序、对比度、文本框边界；输出 `.manifest.json` 与 `.reading.txt`。
+- v3 当前只支持日语。其他语言保留旧路径，本次未扩展或验收其渲染能力。
+- 一份正式构建由多个单文件原子写入组成，整组三格式不是事务。失败时查清成功/失败项后重建，不把混合批次当最终产物。
+- 旧验收日志是对应日期的历史记录；不能当作新版视觉或新数据的验收结果。
 
-## 限制
+使用流程见 [SKILL.md](SKILL.md)，按任务读取对应参考。已有数据可先用 `python scripts/song_context.py "<data.json>"` 查看摘要，再用 `--line` / `--section` 定位；完整设计仍须读全曲。PPT 字段以 [PPTX-DESIGN.md](PPTX-DESIGN.md) 为准。
 
-这个 skill 不做的事情：不帮你唱、不帮你纠正发音、不替代声乐老师。它帮你把"了解一首歌"的门槛降到最低——剩下的，是你和麦克风之间的事。
+新歌或整曲改版，生成前运行 `python scripts/visual_plan.py "<data.json>" --require-director`。三个自拟短歌示例位于 examples/；用于演示不同设计方向，不是所有歌曲的模板。
 
-也不做歌词翻译的"再创作"。有些人喜欢把日文歌词译成漂亮的现代诗——那不是这条路。这条路是：原文说了什么、每个词什么意思、为什么这样表达——然后你自己决定该怎么唱。
+## 场景版 v4
 
-嘛，大抵就是这样了。胡言乱语了许多。
+新日语 PPT 可使用共享物件、场景轨迹、镜头与静态页之间的承接；方法见 `references/visual-directing.md`，字段见 `references/scene-contract.md`。`examples/scene-return/data.json` 是可运行的自拟短歌，v3 示例与旧渲染仍保留。整曲证据用 `scripts/scene_evidence.py`，不自动给审美通过结论。
+
+```bash
+python build_pptx.py examples/scene-return/data.json scene-example.pptx
+python -m unittest discover -s scripts -p 'test_*.py'
+python scripts/test_line_ids.py
+```

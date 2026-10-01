@@ -1,0 +1,617 @@
+{
+  "schema_version": "2.1",
+  "language": "ja",
+  "title": "まどのあかり",
+  "info_rows": [
+    [
+      "歌曲名",
+      "まどのあかり"
+    ],
+    [
+      "演唱者",
+      "自拟示例；无录音"
+    ]
+  ],
+  "lyric_sections": [
+    [
+      "[Verse]",
+      [
+        {
+          "id": "window-01",
+          "jp": "まどをあける",
+          "romaji": "Mado wo akeru",
+          "zh": "推开窗。"
+        },
+        {
+          "id": "window-02",
+          "jp": "あめはやんだ",
+          "romaji": "Ame wa yanda",
+          "zh": "雨停了。"
+        },
+        {
+          "id": "window-03",
+          "jp": "きみのこえがのこる",
+          "romaji": "Kimi no koe ga nokoru",
+          "zh": "你的声音还留在这里。"
+        }
+      ]
+    ],
+    [
+      "[Outro]",
+      [
+        {
+          "id": "window-04",
+          "jp": "もうすこしここにいる",
+          "romaji": "Mou sukoshi koko ni iru",
+          "zh": "再在这里待一会儿。"
+        },
+        {
+          "id": "window-05",
+          "jp": "おちゃがさめるまで",
+          "romaji": "Ocha ga sameru made",
+          "zh": "等到茶凉下来。"
+        },
+        {
+          "id": "window-06",
+          "jp": "ひとりでもだいじょうぶ",
+          "romaji": "Hitori demo daijoubu",
+          "zh": "一个人也没关系。"
+        }
+      ]
+    ]
+  ],
+  "sources_lyrics": [],
+  "sources_info": [],
+  "vocab_table": [],
+  "grammar_points": [],
+  "culture_notes": [],
+  "singing_tips": [],
+  "visual_profile": {
+    "renderVersion": 4,
+    "cover": {
+      "title": "まどのあかり",
+      "artist": "SELF-AUTHORED EXAMPLE",
+      "typeface": "serif",
+      "background": "F2EBDD",
+      "ink": "273A32",
+      "secondary": "46584D",
+      "text_zone": [
+        0.53,
+        0.12,
+        0.43,
+        0.74
+      ],
+      "scene": {
+        "id": "room",
+        "progress": 0,
+        "viewport": [
+          0.03,
+          0.13,
+          0.43,
+          0.73
+        ]
+      }
+    },
+    "previewPageIds": [
+      "open-window",
+      "rain-memory",
+      "wait",
+      "tea-return"
+    ],
+    "director": {
+      "version": 1,
+      "source_fingerprint": "4862bd4cd8d22c01",
+      "brief": {
+        "premise": "叙述者推窗看雨停，却仍停留在一个人的声音里。",
+        "emotional_arc": "从外界静下来，到容许自己停留，最后接受独处。",
+        "evidence_basis": "lyrics_only"
+      },
+      "system": {
+        "concept": "以窗外转晴和室内等待组织一段安静的告别。",
+        "palette_logic": "暖纸色表示室内停留；末段转灰绿，表示接受而非爆发。",
+        "typography_logic": "衬线的细节保留亲近的书页感；不作巨大呼喊。",
+        "composition_logic": "窗与文字共享留白；最后镜头靠近茶杯，窗的位置仍可识别。",
+        "motif_logic": "同一扇窗由闭到开，雨丝淡出；同一个茶杯留在末段，表示允许停留。",
+        "avoid": [
+          "霓虹",
+          "强冲击倾斜",
+          "副歌式爆亮"
+        ]
+      },
+      "timeline": [
+        {
+          "id": "outside-to-memory",
+          "line_ids": [
+            "window-01",
+            "window-02",
+            "window-03"
+          ],
+          "state": "外部安静，记忆仍在",
+          "visual_shift": "开场留白后转向室内凝视",
+          "reason": "雨停与声音残留构成外部/内部的对照。"
+        },
+        {
+          "id": "acceptance",
+          "line_ids": [
+            "window-04",
+            "window-05",
+            "window-06"
+          ],
+          "state": "容许停留，接受独处",
+          "visual_shift": "保持衬线与左重心，底色轻转灰绿",
+          "reason": "茶凉是缓慢的时间，末句是安静确认。"
+        }
+      ]
+    }
+  },
+  "visual_assets": {
+    "pages": [
+      {
+        "id": "open-window",
+        "line_ids": [
+          "window-01"
+        ],
+        "phase_id": "outside-to-memory",
+        "role": "introduce",
+        "reason": "推窗是独立动作，给它一页呼吸。",
+        "transition": "从封面进入一个简单动作。",
+        "layout": "left",
+        "typeface": "serif",
+        "background": "F2EBDD",
+        "ink": "273A32",
+        "secondary": "46584D",
+        "accent": "816C45",
+        "motifs": [],
+        "vertical": 0.55,
+        "text_zone": [
+          0.5,
+          0.16,
+          0.46,
+          0.7
+        ],
+        "font_size": 40,
+        "gap": 16,
+        "scene": {
+          "id": "room",
+          "progress": 0.25,
+          "viewport": [
+            0.025,
+            0.12,
+            0.435,
+            0.74
+          ]
+        },
+        "visual_event": "窗向外转开，杯仍在原处。",
+        "lyric_basis": "推窗是实际动作。",
+        "visual_link": {
+          "from": "cover",
+          "mode": "continue",
+          "anchor": "window",
+          "change": "窗逐渐开启，保持室内对象关系。"
+        }
+      },
+      {
+        "id": "rain-memory",
+        "line_ids": [
+          "window-02",
+          "window-03"
+        ],
+        "phase_id": "outside-to-memory",
+        "role": "contrast",
+        "reason": "雨已经停止，声音还在，两句一起读出对照。",
+        "transition": "保持文字起点，增加第二个句子形成内外对照。",
+        "layout": "left",
+        "typeface": "serif",
+        "background": "F2EBDD",
+        "ink": "273A32",
+        "secondary": "46584D",
+        "accent": "816C45",
+        "motifs": [],
+        "vertical": 0.48,
+        "text_zone": [
+          0.5,
+          0.16,
+          0.46,
+          0.7
+        ],
+        "font_size": 40,
+        "gap": 16,
+        "scene": {
+          "id": "room",
+          "progress": 0.5,
+          "viewport": [
+            0.025,
+            0.12,
+            0.435,
+            0.74
+          ]
+        },
+        "visual_event": "雨丝完全淡出，窗保持开启。",
+        "lyric_basis": "雨已停而声音仍在。",
+        "visual_link": {
+          "from": "open-window",
+          "mode": "continue",
+          "anchor": "window",
+          "change": "窗逐渐开启，保持室内对象关系。"
+        }
+      },
+      {
+        "id": "wait",
+        "line_ids": [
+          "window-04"
+        ],
+        "phase_id": "acceptance",
+        "role": "resolve",
+        "reason": "停留、茶凉、接受独处构成一个回应，不拆成三个口号。",
+        "transition": "密度温和增加，转灰绿收束；没有假设录音高潮。",
+        "layout": "left",
+        "typeface": "serif",
+        "background": "E5E9DC",
+        "ink": "273A32",
+        "secondary": "46584D",
+        "accent": "816C45",
+        "motifs": [],
+        "vertical": 0.42,
+        "text_zone": [
+          0.5,
+          0.16,
+          0.46,
+          0.7
+        ],
+        "font_size": 40,
+        "gap": 16,
+        "scene": {
+          "id": "room",
+          "progress": 0.75,
+          "viewport": [
+            0.025,
+            0.12,
+            0.435,
+            0.74
+          ]
+        },
+        "visual_event": "茶杯仍在窗下，视野开始靠近。",
+        "lyric_basis": "停留不引入额外事件。",
+        "visual_link": {
+          "from": "rain-memory",
+          "mode": "continue",
+          "anchor": "window",
+          "change": "窗逐渐开启，保持室内对象关系。"
+        }
+      },
+      {
+        "id": "tea-return",
+        "line_ids": [
+          "window-05",
+          "window-06"
+        ],
+        "phase_id": "acceptance",
+        "role": "resolve",
+        "reason": "停留、茶凉、接受独处构成一个回应，不拆成三个口号。",
+        "transition": "密度温和增加，转灰绿收束；没有假设录音高潮。",
+        "layout": "left",
+        "typeface": "serif",
+        "background": "E5E9DC",
+        "ink": "273A32",
+        "secondary": "46584D",
+        "accent": "816C45",
+        "motifs": [],
+        "vertical": 0.42,
+        "repeat_of": "open-window",
+        "repeat_reason": "回到同一房间，窗已开，视线转向茶杯。",
+        "text_zone": [
+          0.5,
+          0.16,
+          0.46,
+          0.7
+        ],
+        "font_size": 40,
+        "gap": 16,
+        "scene": {
+          "id": "room",
+          "progress": 1.0,
+          "viewport": [
+            0.025,
+            0.12,
+            0.435,
+            0.74
+          ],
+          "camera": [
+            530,
+            560,
+            1.45
+          ]
+        },
+        "visual_event": "茶杯放大，窗留在边缘。",
+        "lyric_basis": "茶凉与独处接受相连。",
+        "visual_link": {
+          "from": "open-window",
+          "mode": "return",
+          "anchor": "window",
+          "change": "回到同一窗，镜头靠近茶杯。"
+        }
+      }
+    ],
+    "objects": {
+      "window": {
+        "meaning": "同一个窗的形状保持不变，位置变化表示开启。",
+        "primitives": [
+          {
+            "kind": "rect",
+            "box": [
+              -220,
+              -260,
+              220,
+              260
+            ],
+            "fill": "DBE7D4",
+            "stroke": "415E44",
+            "width": 10
+          },
+          {
+            "kind": "line",
+            "points": [
+              [
+                0,
+                -260
+              ],
+              [
+                0,
+                260
+              ]
+            ],
+            "stroke": "415E44",
+            "width": 8
+          }
+        ]
+      },
+      "rain": {
+        "meaning": "雨停止后细线渐退。",
+        "primitives": [
+          {
+            "kind": "line",
+            "points": [
+              [
+                -150,
+                -180
+              ],
+              [
+                -180,
+                80
+              ]
+            ],
+            "stroke": "6E8A7A",
+            "width": 4
+          },
+          {
+            "kind": "line",
+            "points": [
+              [
+                -90,
+                -180
+              ],
+              [
+                -120,
+                80
+              ]
+            ],
+            "stroke": "6E8A7A",
+            "width": 4
+          },
+          {
+            "kind": "line",
+            "points": [
+              [
+                -30,
+                -180
+              ],
+              [
+                -60,
+                80
+              ]
+            ],
+            "stroke": "6E8A7A",
+            "width": 4
+          },
+          {
+            "kind": "line",
+            "points": [
+              [
+                30,
+                -180
+              ],
+              [
+                0,
+                80
+              ]
+            ],
+            "stroke": "6E8A7A",
+            "width": 4
+          },
+          {
+            "kind": "line",
+            "points": [
+              [
+                90,
+                -180
+              ],
+              [
+                60,
+                80
+              ]
+            ],
+            "stroke": "6E8A7A",
+            "width": 4
+          },
+          {
+            "kind": "line",
+            "points": [
+              [
+                150,
+                -180
+              ],
+              [
+                120,
+                80
+              ]
+            ],
+            "stroke": "6E8A7A",
+            "width": 4
+          }
+        ]
+      },
+      "cup": {
+        "meaning": "茶杯保留在同一室内；结尾将注意力转到等待。",
+        "primitives": [
+          {
+            "kind": "ellipse",
+            "box": [
+              55,
+              -65,
+              155,
+              30
+            ],
+            "stroke": "835D38",
+            "width": 15
+          },
+          {
+            "kind": "rect",
+            "box": [
+              -100,
+              -100,
+              90,
+              70
+            ],
+            "fill": "B48B55",
+            "stroke": "835D38",
+            "width": 5
+          },
+          {
+            "kind": "ellipse",
+            "box": [
+              -100,
+              -125,
+              90,
+              -75
+            ],
+            "fill": "EFE2BE",
+            "stroke": "835D38",
+            "width": 5
+          }
+        ]
+      }
+    },
+    "scene_library": {
+      "room": {
+        "meaning": "自拟歌曲的同一室内空间，雨停后视线从窗移向茶杯。",
+        "layers": [
+          {
+            "id": "pane",
+            "object": "window",
+            "x": 470,
+            "y": 400,
+            "scale": 1,
+            "frames": [
+              {
+                "at": 0,
+                "x": 470,
+                "rotation": 0
+              },
+              {
+                "at": 1,
+                "x": 330,
+                "rotation": -12
+              }
+            ]
+          },
+          {
+            "id": "rain",
+            "object": "rain",
+            "x": 470,
+            "y": 400,
+            "frames": [
+              {
+                "at": 0,
+                "opacity": 0.7
+              },
+              {
+                "at": 0.4,
+                "opacity": 0
+              }
+            ]
+          },
+          {
+            "id": "tea",
+            "object": "cup",
+            "x": 670,
+            "y": 740,
+            "scale": 0.65
+          }
+        ]
+      }
+    }
+  },
+  "verification": {
+    "checks": {
+      "song_version": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "lyric_text": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "reading_translation": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "structure": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "render": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      },
+      "visual": {
+        "status": "待核验",
+        "note": "自拟文本示例；此数据不携带外部来源、录音核验或视觉验收结果。"
+      }
+    },
+    "lines": {
+      "window-01": {
+        "status": "待核验",
+        "sources": []
+      },
+      "window-02": {
+        "status": "待核验",
+        "sources": []
+      },
+      "window-03": {
+        "status": "待核验",
+        "sources": []
+      },
+      "window-04": {
+        "status": "待核验",
+        "sources": []
+      },
+      "window-05": {
+        "status": "待核验",
+        "sources": []
+      },
+      "window-06": {
+        "status": "待核验",
+        "sources": []
+      }
+    },
+    "lyrics": {
+      "sources": [],
+      "text_compared": {
+        "compared": 0,
+        "matched": 0,
+        "note": "自拟文本，不冒充网络来源比对。"
+      }
+    },
+    "fingerprint": "4862bd4cd8d22c01"
+  }
+}

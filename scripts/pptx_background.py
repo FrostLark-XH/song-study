@@ -332,6 +332,26 @@ def _vignette_layer(mood: str) -> np.ndarray:
     return result
 
 
+def _accent_sweep_layer(tint_hex: str, strength: float) -> np.ndarray:
+    """Rising diagonal accent light band (screen-blend source).
+
+    A soft band along the lower-left → upper-right diagonal that brightens as it
+    climbs, so the accent color reads as an upward stroke of light — not a flat
+    wash. Lets a song's accent (群青蓝, amber…) live in the main visual layer.
+    """
+    tint = _rgb_array(tint_hex)
+    ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
+    # 0 at bottom-left, 1 at top-right — the "rise" axis
+    diag = (xs / W + (1.0 - ys / H)) * 0.5
+    band = np.exp(-((diag - 0.52) / 0.22) ** 2)
+    rise = 0.30 + 0.70 * diag
+    mask = band * rise * strength
+    out = np.zeros((H, W, 3), dtype=np.float32)
+    for ch in range(3):
+        out[:, :, ch] = tint[ch] * mask
+    return np.clip(out, 0, 255)
+
+
 def _surface_unify(img_np: np.ndarray) -> np.ndarray:
     """Layer 6: Gaussian blur + micro-contrast for unified film-like finish."""
     # 1/4 res blur for speed
@@ -436,3 +456,102 @@ def generate_mood_background(seed: int = 42, base_color: str = _DEFAULT_BASE,
 def generate_paper_background(seed: int = 42, base_color: str = _DEFAULT_BASE) -> BytesIO:
     """Backward-compatible wrapper: neutral mood, layers 0/3/5/6 only."""
     return generate_mood_background(seed=seed, base_color=base_color, mood="neutral")
+
+
+def generate_section_background(seed: int = 42, left_hex: str = "F5F2EA",
+                                right_hex: str = "E8EAEC", brightness: float = 1.0,
+                                dark: bool = False, texture_strength: float = 0.4,
+                                tint_hex: str | None = None,
+                                tint_strength: float = 0.0) -> BytesIO:
+    """Clean per-section background: horizontal two-color gradient + faint grain.
+
+    Lighter and calmer than generate_mood_background — the reference cards are
+    near-flat warm-paper → cool-gray with almost invisible texture, not the
+    heavy 7-layer treatment. `dark` switches to a near-black inverted base with
+    a faint warm light pool. `tint_hex`/`tint_strength` overlay a rising accent
+    light band (screen blend) so a song's accent color can enter the main visual
+    layer instead of staying a small decorative accent.
+    """
+    rng = np.random.default_rng(seed)
+    if dark:
+        left = _rgb_array("1C1E1F")
+        right = _rgb_array("26282D")
+    else:
+        left = _rgb_array(left_hex)
+        right = _rgb_array(right_hex)
+
+    xs = np.linspace(0.0, 1.0, W, dtype=np.float32).reshape(1, W, 1)
+    canvas = left.reshape(1, 1, 3) * (1.0 - xs) + right.reshape(1, 1, 3) * xs
+    canvas = np.repeat(canvas, H, axis=0).astype(np.float32)
+
+    # very faint anisotropic fiber grain (reference is near-flat)
+    fiber = _fiber_grain_layer(rng, "neutral")
+    fiber_opacity = 0.05 * texture_strength
+    fn = fiber / 255.0
+    bn = canvas / 255.0
+    overlay = np.where(bn < 0.5, 2.0 * bn * fn, 1.0 - 2.0 * (1.0 - bn) * (1.0 - fn))
+    canvas = canvas * (1.0 - fiber_opacity) + overlay * 255.0 * fiber_opacity
+
+    if dark:
+        light = _light_pool_layer("000000", "dark")
+        canvas = _blend_screen(canvas, light, 0.10)
+    else:
+        canvas = canvas * brightness
+        if tint_hex and tint_strength > 0.0:
+            sweep = _accent_sweep_layer(tint_hex, tint_strength)
+            canvas = _blend_screen(canvas, sweep, 1.0)
+
+    img = Image.fromarray(np.clip(canvas, 0, 255).astype(np.uint8), mode="RGB")
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
+
+
+def compose_section_background(specs: list | None = None, left_hex: str = "F5F2EA",
+                               right_hex: str = "E8EAEC", brightness: float = 1.0,
+                               dark: bool = False, seed: int = 42) -> BytesIO:
+    """Procedural-engine section background: base gradient + composited motifs.
+
+    The base is the same clean horizontal two-color gradient (plus faint fiber
+    grain and, when dark, a warm light pool) as generate_section_background, but
+    decoration comes from the ordered ``specs`` list composited via the motif
+    engine instead of a native tint sweep. Empty specs (old songs) yield a
+    near-flat base. The engine never invents motifs — it renders only what the
+    director wrote in visual_assets.
+    """
+    from scripts.pptx_motifs import composite_motifs
+
+    rng = np.random.default_rng(seed)
+    if dark:
+        left = _rgb_array("1C1E1F")
+        right = _rgb_array("26282D")
+    else:
+        left = _rgb_array(left_hex)
+        right = _rgb_array(right_hex)
+
+    xs = np.linspace(0.0, 1.0, W, dtype=np.float32).reshape(1, W, 1)
+    canvas = left.reshape(1, 1, 3) * (1.0 - xs) + right.reshape(1, 1, 3) * xs
+    canvas = np.repeat(canvas, H, axis=0).astype(np.float32)
+
+    fiber = _fiber_grain_layer(rng, "neutral")
+    fiber_opacity = 0.05
+    fn = fiber / 255.0
+    bn = canvas / 255.0
+    overlay = np.where(bn < 0.5, 2.0 * bn * fn, 1.0 - 2.0 * (1.0 - bn) * (1.0 - fn))
+    canvas = canvas * (1.0 - fiber_opacity) + overlay * 255.0 * fiber_opacity
+
+    if dark:
+        light = _light_pool_layer("000000", "dark")
+        canvas = _blend_screen(canvas, light, 0.10)
+    else:
+        canvas = canvas * brightness
+
+    if specs:
+        canvas = composite_motifs(canvas, specs)
+
+    img = Image.fromarray(np.clip(canvas, 0, 255).astype(np.uint8), mode="RGB")
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
