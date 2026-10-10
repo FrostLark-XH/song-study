@@ -1,10 +1,34 @@
 # song-study
 
-从同一个 `data.json` 生成 Markdown 学习资料、Word 文档和可编辑歌词 PPT。歌词来源、版本、读音翻译及六项核验状态记录在数据中；生成脚本不会自动证明来源或语言正确。
+想学一首歌，你只需要说出它的名字。
 
-## 安装与生成
+剩下的交给 song-study。它自己去查——找到这首歌的歌词，追到最可靠的出处，辨清是哪一个录音版本，给每一个字标上读音，把意思译成你能懂的话，再顺着歌词往下挖：这首歌在唱什么，写给谁，背后发生过什么。
 
-保留完整文件夹：四个 `build_*.py`、`scripts/`、`references/` 和文档都要一起复制。不要只替换 SKILL.md。生成脚本需 Python 3.10+，可选飞书发送脚本使用 tomllib，需 3.11+。
+查到的、核验过的、翻译好的，最后都长成你能带走的东西：一份能慢慢读的学习笔记，一页页能翻的讲义，还有一版能跟着唱、跟着看的歌词 PPT。
+
+你不必是日语专家，也不用懂什么文件格式。你只要，知道那首歌的名字。
+
+## 它能给你什么
+
+三种成品，同一条根。
+
+**学习笔记（Markdown）**——歌词、逐字读音、翻译、词汇与语法讲解，还有这首歌的背景故事。适合慢慢读。
+
+**讲义（Word）**——同样的内容，排版成方便打印、方便记笔记的文档。
+
+**歌词 PPT**——可编辑的演示文稿，一页页跟着唱、跟着看。歌词的排版、配色、留白，都按这首歌自己的情绪来设计。
+
+所有内容都出自同一份 `data.json`。你只写一次，剩下的交给脚本——改了歌词就重新生成，不用手工维护三份不同的内容。
+
+## 它是怎么工作的
+
+你说出歌名，它去检索歌词——从官方来源到歌词平台（Genius、uta-net、Musixmatch、QQ 音乐、网易云等），追到最可靠的出处，区分开原文、翻译和注音。接着确认版本、标注读音、翻译意思、写清背景，把每一处的来源和核验状态都记下来。最后，从这份记录生成三种成品。
+
+歌词的来源、版本、读音翻译，以及六项核验的状态，都保存在 `data.json` 里。生成脚本不会替你证明来源或语言是否正确——它们只负责把记录变成成品。
+
+## 想自己动手
+
+如果想让它在你的机器上跑起来：
 
 ```bash
 pip install -r requirements.txt
@@ -12,7 +36,7 @@ python build_all.py "<song-dir>/data.json"
 python scripts/validate.py "<song-dir>/data.json" "<song-dir>"
 ```
 
-产物写在歌曲文件夹中。只改歌词内容时编辑 `data.json`，随后重新生成；不手工维护三份不同内容。
+生成脚本需要 Python 3.10+；可选的飞书发送脚本用到 tomllib，需要 3.11+。安装时保留完整文件夹：四个 `build_*.py`、`scripts/`、`references/` 和文档一起复制，不要只替换 SKILL.md。产物写在歌曲文件夹里。
 
 ## 设计顺序
 
@@ -20,7 +44,7 @@ python scripts/validate.py "<song-dir>/data.json" "<song-dir>"
 
 ## PPT v3
 
-新日语 PPT 可用 `visual_profile.renderVersion: 3` 和 `visual_assets.pages`。先按 [歌曲视觉导演](references/visual-directing.md) 理解歌曲和安排情绪进程，再按 [PPTX-DESIGN.md](PPTX-DESIGN.md) 写逐页分镜。每页明确行 ID、作用、前后关系、构图、字体类型、颜色与设计理由。新方案使用 director 契约；每页按语义取1–3条演唱行。无此开关的旧数据继续用原 L1–L8。
+新日语 PPT 可用 `visual_profile.renderVersion: 3` 和 `visual_assets.pages`。先按 [歌曲视觉导演](references/visual-directing.md) 理解歌曲和安排情绪进程，再按 [PPTX-DESIGN.md](PPTX-DESIGN.md) 写逐页分镜。每页明确行 ID、作用、前后关系、构图、字体类型、颜色与设计理由。新方案使用 director 契约；每页按语义取 1–3 条演唱行。无此开关的旧数据继续用原 L1–L8。
 
 ```bash
 python build_pptx.py "<song-dir>/data.json"
