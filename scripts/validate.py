@@ -19,6 +19,8 @@ from collections import Counter
 
 VALID_LANGUAGES = {"ja", "en", "zh", "mixed"}
 VERIFY_STATUSES = {"已核验", "局部待核验", "文本不完整", "未获取到", "使用范围受限", "待核验"}
+DEFAULT_OUTPUTS = ("md", "docx")
+ALL_OUTPUTS = ("md", "docx", "pptx")
 CHECK_LABELS = {
     "song_version": "歌曲及版本识别",
     "lyric_text": "歌词来源与文本比对",
@@ -272,12 +274,17 @@ def lyric_completeness(d: dict, meta: dict) -> dict:
     }
 
 
-def check_outputs(song_dir: str) -> list[str]:
-    """Check that .md/.docx/.pptx exist and are non-empty in song_dir."""
+def check_outputs(song_dir: str, expected=DEFAULT_OUTPUTS) -> list[str]:
+    """Check that the requested outputs exist and are non-empty in song_dir.
+
+    Default request is MD + DOCX; PPTX is opt-in via --pptx. A missing PPTX is
+    only a problem when the request actually asked for it, so the default task
+    does not report or warn about an absent deck.
+    """
     problems: list[str] = []
     if not os.path.isdir(song_dir):
         return [f"输出目录不存在: {song_dir}"]
-    for ext in ("md", "docx", "pptx"):
+    for ext in expected:
         found = [f for f in os.listdir(song_dir) if f.endswith("." + ext)]
         if not found:
             problems.append(f"缺 .{ext}")
@@ -344,8 +351,11 @@ def verification_lines(d: dict) -> list[str]:
 
 def main(argv: list[str]) -> int:
     if not argv:
-        print("Usage: python scripts/validate.py <data.json> [song_dir]")
+        print("Usage: python scripts/validate.py <data.json> [song_dir] [--pptx]")
+        print("  Default checks MD + DOCX outputs; --pptx also requires the PPTX deck.")
         return 1
+    expect = ALL_OUTPUTS if "--pptx" in argv else DEFAULT_OUTPUTS
+    argv = [a for a in argv if a != "--pptx"]
     d, meta = load_song(argv[0])
     warnings, errors = validate_schema(d, meta["lines"], meta["language"])
     total, cov = check_coverage(d)
@@ -353,6 +363,7 @@ def main(argv: list[str]) -> int:
     comp = lyric_completeness(d, meta)
 
     print(f"VALIDATE: {d.get('title', '(无标题)')}")
+    print(f"  产物检查范围: {', '.join(expect)}")
     print(f"  演唱出现次数: {m['occurrences']}   源歌词唯一文本行数: {m['unique_source']}")
     print(f"  首行: {comp['first_line']}")
     print(f"  末行: {comp['last_line']}")
@@ -372,7 +383,7 @@ def main(argv: list[str]) -> int:
     for e in errors:
         print(f"  [ERROR] {e}")
     if len(argv) > 1:
-        for p in check_outputs(argv[1]):
+        for p in check_outputs(argv[1], expect):
             print(f"  [warn] {p}")
     print(f"  result: {'FAIL' if errors else 'PASS'} (warnings 不阻断)")
     return 1 if errors else 0

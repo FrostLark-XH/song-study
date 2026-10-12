@@ -1,11 +1,11 @@
 ---
 name: song-study
-description: 用户明确要求学唱歌曲、制作歌词学习资料或修改现有资料时使用。由同一 data.json 生成 MD、DOCX、可编辑 PPTX，记录版本、来源和分项核验；PPT 先确定整曲氛围、美术设定与段落视觉脚本。普通听歌聊天或仅提到歌名不触发完整生成。
+description: 用户明确要求学唱歌曲、制作歌词学习资料或修改现有资料时使用。默认只交付 MD、DOCX 两个文件；仅当用户明确要求 PPT / 演示文稿时才生成可编辑 PPTX 并渲染 montage 预览图。由同一 data.json 生成，记录版本、来源和分项核验；PPT 先确定整曲氛围、美术设定与段落视觉脚本。普通听歌聊天或仅提到歌名不触发完整生成。
 ---
 
 # 歌曲学习
 
-先完成用户指定范围。完整学歌任务默认交付 MD、DOCX、PPTX；单改文字、PPT 或只写设计时不扩展任务。已确认的偏好与授权沿用，内部试排后自主继续；确有影响内容的版本歧义才集中确认。
+先完成用户指定范围。默认只交付 MD、DOCX 两个文件——绝不主动生成 PPTX 或 montage 预览图。只有用户明确要求 PPT / PowerPoint / 演示文稿时，才读取视觉规范、设计页面、生成并渲染 PPT，无需再次确认。用户指定单一格式时仅执行该格式所需流程。已确认的偏好与授权沿用，内部试排后自主继续；确有影响内容的版本歧义才集中确认。
 
 ## 按需读取
 
@@ -24,8 +24,9 @@ description: 用户明确要求学唱歌曲、制作歌词学习资料或修改�
 
 ## 不省略的底线
 
+- 交付物只按请求范围：默认交付 MD、DOCX 两个文件；PPTX 与 montage 预览图只在用户明确要求 PPT 时生成，不主动加码、不附赠预览。
 - 先识别歌曲与录音版本。未指定时采用录音室完整版并注明；不把 live、翻唱与原版证据混用。歌词来自实际读取的文本，模型记忆只用于定位，不能补写缺行。
-- 内容、来源、核验与正式视觉计划保存在同一 `data.json`；三格式消费同一 `load_song()`。生成后不手改某份成品造成漂移。
+- 内容、来源、核验与正式视觉计划保存在同一 `data.json`；各格式消费同一 `load_song()`。生成后不手改某份成品造成漂移。
 - 行 ID 持久化：纠错、换序、跨段移动均不改 ID；新增行用未使用 ID，重复副歌每次出现各有 ID。旧元组兼容保留，不强迁移冻结资料。
 - 分开记录版本、原文、注音翻译、结构、渲染、视觉六项检查及使用范围。引用关联、实际比对、生成、渲染、看图分别有证据；缺证据就保留待核验，程序通过不能代替语言或审美判断。
 - 查到来源不等于允许全文再分发；遵守当前环境的版权与访问规则。不能获取全文时说明缺口，交付可用来源与允许的学习材料，不生成空壳，不保证每次一定取得歌词。
@@ -36,7 +37,7 @@ description: 用户明确要求学唱歌曲、制作歌词学习资料或修改�
 1. **确定范围与现状。** 新歌先定位版本；现有资料先运行下面的摘要命令，再按行/段读取。整曲理解、完整性核验与新视觉方案仍须阅读全曲原文，不能用摘要替代。
 2. **复用可追溯证据。** 先列研究问题，合并独立查询，维护一份“结论—证据—待查缺口”的简洁记录；已有可靠结论复用，后续搜索集中补缺口，避免反复读同一资料、重复分析、多份相同报告。版本相同、内容未变且证据可查时沿用，不重复搜索；只有缺失、冲突、过期或本次改变的部分再查。不要把“已记录”自动升级为“已核验”。
 3. **编辑与记录。** 更新必要字段及受影响检查。文本变更先核对相关原文/读音/译文、重复关系与覆盖，再更新核验指纹；不只刷新指纹来消除告警。段落/分页变动检查覆盖与顺序；视觉改动不重查无关歌词。
-4. **设计与生成。** 新 PPT 按歌曲理解→美术设定→段落脚本→少量试排→整曲生成。颜色、文字、留白可独立成立；符号先规定依据、形态、出现/退场。正式参数写回数据后构建。
+4. **设计与生成。** 仅显式要求 PPT 时走视觉流程：歌曲理解→美术设定→段落脚本→少量试排→整曲生成。颜色、文字、留白可独立成立；符号先规定依据、形态、出现/退场。正式参数写回数据后构建。默认 MD+DOCX 任务跳过视觉规范读取与 PPT 生成。
 5. **检查与交付。** 修复任务范围内的 error，逐项处理或说明 warning。首次完整制作检查完整覆盖并渲染实际成品；局部修改重新渲染、查改动页和相邻页及整曲缩略图，沿用未改变且有记录的检查范围。无法渲染或看图就保留待核验。仅修改内容/文档不跑全部引擎回归；改变引擎才跑相关回归。
 
 完整研究保留必要深度，局部修改只复核受影响内容；不能为了省 token 提前结束关键检索、压缩有价值的背景内容或省略必要核实。
@@ -49,24 +50,36 @@ python scripts/song_context.py "<song-dir>/data.json" --line "<persistent-id>"
 python scripts/song_context.py "<song-dir>/data.json" --section "<exact-section-name>"
 ```
 
+## 环境与运行
+
+首次在新环境工作先检查并记录：可用的检索/页面获取方式（含已配置代理与命令行细节）、Python 编码方案、临时目录创建方式、图片读取能力。同一环境优先复用已验证路径；失败或配置变化才重查，不每首歌从零排障，也不把一次暂时失败永久写成不可用。检索时固化成功入口——记录实际成功的 URL、页面类型、歌曲/剧目、版本与获取方式；404 改走站内链接或已知入口，目录页与歌词页分清，登录/验证/访问控制一律换源、不绕过。拿到页面先判断内容类型再采用（静态正文 / JS 动态加载 / 挑战页 / 错误页）；HTML 里没有歌词不算获取成功，动态页用当前可用方式读取，读不到就换源，不重复下空页、不用模型记忆补全。检索来源覆盖官方、歌词平台（含 Genius、uta-net、Musixmatch、QQ 音乐、网易云音乐等）与其他页面，区分原文、翻译与注音，带时间戳的歌词保留顺序、重复演唱与变体；平台上有歌词不等于已经获取并核实。
+
+Windows Python 任务统一 `python -X utf8`（脚本内亦 `sys.stdout.reconfigure(encoding="utf-8")` 双保险）。临时目录由实际运行的 Python 创建并返回绝对路径，跨 Git Bash / Windows 时先转换路径，不依赖 `/tmp` 恰好一致。API 403 按错误信息区分额度、权限与其他原因，不一律归为余额不足；确认需充值/授权后保存已完成内容，恢复时从断点继续。图片读取确认不支持就停止重试，保留渲染图并完成可执行的文本、覆盖与边界检查，视觉标待核验，不把渲染成功当看图通过。
+
+核验结果写回 `data.json` 后，重建本次交付范围内、实际消费了变更字段的产物，不留旧成品。重建若改变 PPT，旧渲染回执不得再绑定新文件；重建不要求重复有效的内容检索与语言核验。环境优化只减少重复排障、读取、无效请求与报告，不省关键研究与必要检查。
+
 ## 构建命令
 
-在技能目录运行。新建/整曲改版的完整页计划构建前查导演契约；纯设计草案不运行要求完整页面的校验。
+在技能目录运行。默认生成 MD + DOCX；`--pptx` 才生成可编辑 PPTX（需先查导演契约）。纯设计草案不运行要求完整页面的校验。
 
 ```bash
-python scripts/visual_plan.py "<song-dir>/data.json" --require-director
-python build_all.py "<song-dir>/data.json"
-python scripts/validate.py "<song-dir>/data.json" "<song-dir>"
+python -X utf8 build_all.py "<song-dir>/data.json"                  # MD + DOCX
+python -X utf8 build_all.py "<song-dir>/data.json" --pptx           # MD + DOCX + PPTX
+python -X utf8 scripts/validate.py "<song-dir>/data.json" "<song-dir>"          # 默认查 MD+DOCX
+python -X utf8 scripts/validate.py "<song-dir>/data.json" "<song-dir>" --pptx   # 再查 PPTX
 ```
 
-仅更新 PPT 用 `build_pptx.py`，仅 MD/DOCX 用对应的 `build_md.py` / `build_docx.py`。校验器会查三格式存在性；仅改单格式时如实说明另两格式未生成，不为了消除范围外提示扩展工作。
+仅更新 PPT 用 `build_pptx.py`，仅 MD/DOCX 用对应的 `build_md.py` / `build_docx.py`。校验器按本次请求检查产物——默认任务缺 PPT 不报错、不告警，只有 `--pptx` 请求才要求 PPTX 存在；仅改单格式时如实说明未生成的格式，不为了消除范围外提示扩展工作。
+
+PPT 需要时再跑视觉计划与渲染：
 
 ```bash
-python build_all.py "<song-dir>/data.json" --preview
-python scripts/render_preview.py "<actual-deck.pptx>" --output "<montage.png>"
-python scripts/render_docx.py "<actual-docx.docx>" "<preview-dir>"
+python -X utf8 scripts/visual_plan.py "<song-dir>/data.json" --require-director
+python -X utf8 build_all.py "<song-dir>/data.json" --pptx --preview
+python -X utf8 scripts/render_preview.py "<actual-deck.pptx>" --output "<montage.png>"
+python -X utf8 scripts/render_docx.py "<actual-docx.docx>" "<preview-dir>"
 ```
 
-`--preview` 写抽样 PPT 到 `_preview/`；正式交付用完整成品渲染。PPT 渲染需 PowerPoint COM 或 LibreOffice；DOCX 工具需 Windows Word COM。字体按实际安装情况处理，不保证跨机不换字体。三格式逐个原子写入，整组不是事务；失败时识别成功/失败项，重建一致批次后再交付。
+`--preview` 写抽样 PPT 到 `_preview/`（隐含 PPTX）；正式交付用完整成品渲染。PPT 渲染需 PowerPoint COM 或 LibreOffice；DOCX 工具需 Windows Word COM。字体按实际安装情况处理，不保证跨机不换字体。各格式逐个原子写入，整组不是事务；失败时识别成功/失败项，重建一致批次后再交付。
 
 最终回复只给文件、实际完成的检查和重要缺口。过程报告只保留一次必要记录；复用机器已有回执，不重复写多份相同验收表。

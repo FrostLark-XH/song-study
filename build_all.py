@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""One-shot generator: MD + DOCX + PPTX from a single data.json.
+"""One-shot generator: MD + DOCX from a single data.json (PPTX opt-in).
 
-All three builders consume the same scripts.dataload.load_song() result, so the
-outputs share one normalized data contract. Canonical paths:
+Default build emits MD + DOCX. Pass --pptx to also build the editable PPTX
+deck, or --preview to emit a representative-page PPTX preview instead of the
+full deck. All builders consume the same scripts.dataload.load_song() result,
+so the outputs share one normalized data contract. Canonical paths:
   - MD   : <song_dir>/<dir_name>.md
   - DOCX : <song_dir>/<dir_name>.docx
   - PPTX : <song_dir>/<title>.pptx   (title as build_pptx derives it)
@@ -31,7 +33,7 @@ def _canonical_paths(json_path):
     }
 
 
-def build_all(json_path, preview=False):
+def build_all(json_path, preview=False, include_pptx=False):
     paths = _canonical_paths(json_path)
     if preview:
         # Never replace the complete deck with a representative-page preview.
@@ -43,8 +45,9 @@ def build_all(json_path, preview=False):
     jobs = [
         ("md", lambda: build_md(json_path, paths["md"])),
         ("docx", lambda: build_docx(json_path, paths["docx"])),
-        ("pptx", lambda: build_pptx(json_path, paths["pptx"], preview=preview)),
     ]
+    if include_pptx:
+        jobs.append(("pptx", lambda: build_pptx(json_path, paths["pptx"], preview=False)))
     results = {}
     for fmt, run in jobs:
         try:
@@ -82,21 +85,24 @@ def _discover_songs(root):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python build_all.py <json_data_file> [--preview]")
-        print("  or: python build_all.py --all [--preview]")
+        print("Usage: python build_all.py <json_data_file> [--pptx] [--preview]")
+        print("  or: python build_all.py --all [--pptx] [--preview]")
+        print("  Default: MD + DOCX. --pptx adds the editable PPTX deck.")
+        print("  --preview emits a representative-page PPTX preview (implies PPTX).")
         sys.exit(1)
 
     args = sys.argv[1:]
     preview = "--preview" in args
-    args = [a for a in args if a != "--preview"]
+    include_pptx = "--pptx" in args or preview
+    args = [a for a in args if a not in ("--preview", "--pptx")]
 
     if args[0] == "--all":
         root = os.environ.get("SONG_STUDY_DATA", r"E:\song-study")
         for json_path in _discover_songs(root):
             try:
                 print(f"\n=== {json_path} ===")
-                build_all(json_path, preview=preview)
+                build_all(json_path, preview=preview, include_pptx=include_pptx)
             except Exception as e:
                 print(f"FAIL: {json_path} -> {e}")
     else:
-        build_all(args[0], preview=preview)
+        build_all(args[0], preview=preview, include_pptx=include_pptx)
