@@ -154,6 +154,25 @@ def build_md(json_path, out_path=None):
                 L.append(f"  → {solution}")
             L.append("")
 
+    # 歌曲随笔
+    essay = d.get("essay")
+    if essay:
+        paragraphs = essay.get("paragraphs", [])
+        if paragraphs:
+            L.append("## 歌曲随笔")
+            L.append("")
+            for para in paragraphs:
+                L.append(para)
+                L.append("")
+            author = essay.get("author", "")
+            model = essay.get("model", "")
+            if author:
+                L.append(f"署名：{author}")
+            if model:
+                L.append(f"模型：{model}")
+            if author or model:
+                L.append("")
+
     # 附录
     sources_lyrics = d.get("sources_lyrics", [])
     sources_bg = d.get("sources_bg", [])

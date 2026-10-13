@@ -311,6 +311,24 @@ def build_docx(json_path, out_path):
             add_singing_tip(doc, tip.get("name", ""), tip.get("problem", ""),
                             tip.get("solution", ""), title_cjk=sc_head, body_cjk=sc_body)
 
+    # 歌曲随笔
+    essay = d.get("essay")
+    if essay:
+        paragraphs = essay.get("paragraphs", [])
+        if paragraphs:
+            add_p(doc, "歌曲随笔", cjk=sc_head, size=Pt(15), bold=True, space_after=Pt(8))
+            for para in paragraphs:
+                add_p(doc, para, cjk=sc_body, size=Pt(11), space_after=Pt(6))
+            author = essay.get("author", "")
+            model = essay.get("model", "")
+            if author:
+                p = doc.add_paragraph()
+                p.paragraph_format.space_before = Pt(6)
+                set_font(p.add_run(f"署名：{author}"), cjk=sc_body, en=FONT_EN, size=Pt(9), color="555555")
+            if model:
+                p = doc.add_paragraph()
+                set_font(p.add_run(f"模型：{model}"), cjk=sc_body, en=FONT_EN, size=Pt(9), color="555555")
+
     # Appendix
     sources_lyrics = d.get("sources_lyrics", [])
     sources_bg = d.get("sources_bg", [])

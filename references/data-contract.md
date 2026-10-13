@@ -14,6 +14,7 @@
     {"id": "line-a", "jp": "今日も歩く", "romaji": "Kyou mo aruku", "zh": "今天也继续走"}
   ]]],
   "bg_paras": [], "vocab_table": [], "grammar_points": [], "culture_notes": [], "singing_tips": [],
+  "essay": {"paragraphs": [], "author": "", "model": ""},
   "sources_lyrics": [], "sources_bg": [],
   "verification": {
     "license": "自拟例句；实际歌曲另记使用范围",
@@ -40,6 +41,7 @@
 | vocab_table | 日语每行 `[原文,读音,词性,释义,参考JLPT]`，不确定等级 `—`；其他语言按已有生成器形态 |
 | grammar_points | 对象列表：name、section、quote、analysis、extra（歌词外例句） |
 | singing_tips | 对象列表：name、problem、solution |
+| essay | 对象：paragraphs（随笔正文段落列表）、author（署名）、model（模型标识）。正文定稿后默认写入；缺失表示未生成随笔。随笔是生成者解读，不代表创作者原意 |
 | sources_lyrics / sources_bg | 去重字符串列表，包含来源名、描述、URL、抓取日期；来源结构化记录另在 verification.lyrics.sources |
 | verification | 状态、比对与证据定义见 [来源与核验](sources-and-verification.md) |
 
