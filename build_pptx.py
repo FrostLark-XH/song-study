@@ -215,7 +215,7 @@ def build_pptx(json_path, out_path=None, preview=False):
     # exit); warnings never do. Frozen baselines (derived IDs) only warn.
     from scripts.validate import validate_schema, check_coverage
     v_warn, v_err = validate_schema(d, meta["lines"], meta["language"])
-    _n, c_warn = check_coverage(d)
+    _n, c_warn = check_coverage(meta["lines"])
     for w in v_warn + c_warn:
         print(f"  [validate] {w}")
     if v_err:

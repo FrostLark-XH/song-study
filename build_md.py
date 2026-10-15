@@ -39,7 +39,7 @@ def build_md(json_path, out_path=None):
 
     # Errors block delivery (non-zero exit); warnings never do.
     v_warn, v_err = validate_schema(d, meta["lines"], meta["language"])
-    _n, c_warn = check_coverage(d)
+    _n, c_warn = check_coverage(meta["lines"])
     for w in v_warn + c_warn:
         print(f"  [validate] {w}")
     if v_err:

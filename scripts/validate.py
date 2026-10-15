@@ -40,10 +40,6 @@ except ImportError:  # running as `python scripts/validate.py` directly
     from dataload import load_song
 
 
-def _is_jp_line(line) -> bool:
-    return isinstance(line, (list, tuple)) and len(line) == 3
-
-
 def validate_schema(d: dict, lines=None, language=None) -> tuple[list[str], list[str]]:
     """Return (warnings, errors) for structural/schema problems in d.
 
@@ -94,8 +90,11 @@ def validate_schema(d: dict, lines=None, language=None) -> tuple[list[str], list
                     sp = spec(language) if language else None
                     if sp is None:
                         continue
+                    optional = set(sp.get("optional_fields", ()))
                     need = sp["line_fields"]
                     for k in need:
+                        if k in optional:
+                            continue
                         if not ln.get(k) or not str(ln[k]).strip():
                             warnings.append(f"段 {name!r} 第{j}行字段 {k!r} 为空")
                 elif isinstance(ln, (list, tuple)):
@@ -179,39 +178,28 @@ def check_ids(lines, verification) -> tuple[list[str], list[str]]:
     return warnings, errors
 
 
-def check_coverage(d: dict) -> tuple[int, list[str]]:
-    """Return (total_line_count, warnings) about dup/empty/coverage."""
+def check_coverage(lines) -> tuple[int, list[str]]:
+    """Return (total_line_count, warnings) about adjacent duplicate 原文.
+
+    Consumes ``meta["lines"]`` (canonical ``original`` per line), so any
+    language's original text participates in coverage without language branches.
+    """
     warnings: list[str] = []
-    total = 0
-    for sec in d.get("lyric_sections", []):
-        if not isinstance(sec, (list, tuple)) or len(sec) != 2:
-            continue
-        name, lines = sec
-        if not isinstance(lines, list):
-            continue
-        total += len(lines)
-        prev_jp = None
-        for j, ln in enumerate(lines):
-            if isinstance(ln, dict):
-                jp = ln.get("jp") or ln.get("en")
-            elif _is_jp_line(ln):
-                jp = ln[0]
-            elif isinstance(ln, (list, tuple)) and len(ln) == 2:
-                jp = ln[0]
-            else:
-                continue
-            if prev_jp == jp:
-                warnings.append(f"段 {name!r} 第{j}行与上一行原文重复: {jp!r}")
-            prev_jp = jp
-    if total == 0:
+    prev = None
+    for i, r in enumerate(lines):
+        orig = (r.get("original") or "").strip()
+        if orig and prev == orig:
+            warnings.append(f"段 {r['section']!r} 第{i}行与上一行原文重复: {orig!r}")
+        prev = orig
+    if not lines:
         warnings.append("歌词总行数为 0")
-    return total, warnings
+    return len(lines), warnings
 
 
 def line_metrics(lines) -> dict:
     """Return {occurrences, unique_source} from the persisted line records."""
     occurrences = len(lines)
-    unique = len({(r.get("jp") or r.get("en") or "").strip() for r in lines})
+    unique = len({(r.get("original") or "").strip() for r in lines})
     return {"occurrences": occurrences, "unique_source": unique}
 
 
@@ -231,13 +219,13 @@ def lyric_completeness(d: dict, meta: dict) -> dict:
     """
     lines = meta.get("lines", [])
     occurrences = len(lines)
-    unique = len({(r.get("jp") or r.get("en") or "").strip() for r in lines})
+    unique = len({(r.get("original") or "").strip() for r in lines})
 
     first = last = None
     if lines:
         f, l = lines[0], lines[-1]
-        first = f"{f['section']}　{(f.get('jp') or f.get('en') or '').strip()}"
-        last = f"{l['section']}　{(l.get('jp') or l.get('en') or '').strip()}"
+        first = f"{f['section']}　{(f.get('original') or '').strip()}"
+        last = f"{l['section']}　{(l.get('original') or '').strip()}"
 
     sections = meta.get("sections", [])
     section_order = [s[0] for s in sections if s and s[0]]
@@ -374,7 +362,7 @@ def main(argv: list[str]) -> int:
     argv = [a for a in argv if a != "--pptx"]
     d, meta = load_song(argv[0])
     warnings, errors = validate_schema(d, meta["lines"], meta["language"])
-    total, cov = check_coverage(d)
+    total, cov = check_coverage(meta["lines"])
     m = line_metrics(meta["lines"])
     comp = lyric_completeness(d, meta)
 

@@ -78,17 +78,19 @@ def adapt_legacy(d: dict) -> dict:
 def compute_fingerprint(line_records: list) -> str:
     """SHA-256 (first 16 hex) of the normalized lyric text in order.
 
-    Covers jp/romaji/zh (or en/zh) so that *any* text edit — original, reading,
-    or translation — changes the fingerprint and flags the relevant verification
-    as stale. Position/size-only changes (visual_profile, bg_color) do not touch
-    it.
+    Reads the canonical ``original`` / ``reading`` / ``zh`` slots that
+    ``load_song`` derives from the language spec, so *any* text edit — original,
+    reading, or translation — changes the fingerprint and flags the relevant
+    verification as stale. Position/size-only changes (visual_profile, bg_color)
+    do not touch it. The three-slot format is unchanged from the ja (jp/romaji/zh)
+    and en (en//zh) eras, so existing fingerprints don't drift.
     """
     parts = []
     for r in line_records:
-        jp = (r.get("jp") or r.get("en") or "").strip()
-        rm = r.get("romaji") or ""
+        orig = (r.get("original") or "").strip()
+        rd = r.get("reading") or ""
         zh = r.get("zh") or ""
-        parts.append(f"{jp}\t{rm}\t{zh}")
+        parts.append(f"{orig}\t{rd}\t{zh}")
     return hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()[:16]
 
 
@@ -141,6 +143,11 @@ def load_song(path: str) -> tuple[dict, dict]:
             if sp is not None:
                 for field, value in zip(sp["line_fields"], tup):
                     rec[field] = value
+            # Canonical slots every downstream reader (fingerprint, coverage,
+            # completeness) depends on — language-agnostic 原文/注音/译文.
+            rec["original"] = tup[0] if tup else ""
+            if sp is not None and sp["has_reading"] and len(tup) > 1:
+                rec["reading"] = tup[1]
             line_records.append(rec)
         sections.append([sname, out_lines])
 
