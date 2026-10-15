@@ -22,6 +22,7 @@ from docx.oxml.ns import qn, nsdecls
 from docx.oxml import parse_xml
 
 from scripts.validate import verification_lines, validate_schema, check_coverage
+from scripts.languages import spec
 from scripts.atomic import atomic_replace
 
 # ============================================================
@@ -172,13 +173,6 @@ def add_verify_block(doc, text, cjk=FONT_SC_BODY):
 # SCHEMA DETECTION (language is resolved by scripts/dataload.py)
 # ============================================================
 
-def _is_jp_vocab(vocab_table):
-    if vocab_table and vocab_table[0]:
-        first = str(vocab_table[0][0])
-        return any("぀" <= c <= "ヿ" or "一" <= c <= "鿿" for c in first)
-    return True
-
-
 def _split_note(text):
     """Split a culture note into (title, body) on the first full-width colon."""
     idx = text.find("：")
@@ -207,6 +201,9 @@ def build_docx(json_path, out_path):
         sys.exit(1)
 
     language = meta["language"]
+    sp = spec(language)
+    # Font selection only: Japanese original text needs a Mincho CJK font; every
+    # other implemented language falls back to the SimSun Chinese body font.
     is_jp = language == "ja"
 
     doc = Document()
@@ -249,12 +246,8 @@ def build_docx(json_path, out_path):
             if section_name:
                 add_p(doc, section_name, cjk=sc_head, size=Pt(11), bold=True,
                       color=DEEP_BLUE, space_after=Pt(4))
-            if is_jp:
-                make_table(doc, ["原文", "发音（罗马字）", "中文翻译"], lines, WARM_BEIGE,
-                           data_cjk=jp_body, header_cjk=sc_head)
-            else:
-                make_table(doc, ["原文", "中文翻译"], lines, WARM_BEIGE,
-                           data_cjk=sc_body, header_cjk=sc_head)
+            make_table(doc, list(sp["lyric_headers"]), lines, WARM_BEIGE,
+                       data_cjk=jp_body if is_jp else sc_body, header_cjk=sc_head)
 
     # Language Learning (only when vocab/grammar present)
     vocab_table = d.get("vocab_table", [])
@@ -265,13 +258,8 @@ def build_docx(json_path, out_path):
 
     if vocab_table:
         add_p(doc, "核心词汇", cjk=sc_head, size=Pt(13), bold=True, space_after=Pt(4))
-        is_jp_vocab = _is_jp_vocab(vocab_table)
-        if is_jp_vocab:
-            make_table(doc, ["原文", "读音", "词性", "释义", "等级"], vocab_table,
-                       LIGHT_GREEN, data_cjk=jp_body, header_cjk=sc_head)
-        else:
-            make_table(doc, ["单词/短语", "音标/发音提示", "词性", "释义", "难度"],
-                       vocab_table, LIGHT_GREEN, data_cjk=sc_body, header_cjk=sc_head)
+        make_table(doc, list(sp["vocab_headers"]), vocab_table, LIGHT_GREEN,
+                   data_cjk=jp_body if is_jp else sc_body, header_cjk=sc_head)
         if d.get("vocab_note"):
             add_p(doc, d["vocab_note"], cjk=sc_body, size=Pt(9), space_after=Pt(4))
 

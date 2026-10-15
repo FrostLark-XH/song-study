@@ -18,7 +18,10 @@ builder:
 import hashlib
 import json
 
-VALID_LANGUAGES = ("ja", "en", "zh", "mixed")
+try:
+    from scripts.languages import spec, is_implemented
+except ImportError:  # running as `python scripts/dataload.py` directly
+    from languages import spec, is_implemented
 
 
 def load(path: str) -> dict:
@@ -27,25 +30,19 @@ def load(path: str) -> dict:
 
 
 def detect_language(d: dict):
-    """Return ``(language, explicit)``.
+    """Return ``(language, explicit)`` for the declared language.
 
-    The explicit ``language`` field wins; ``mixed`` maps to the JP three-column
-    path (jp/romaji/zh). Bare-tuple column count is the legacy fallback and is
-    flagged ``explicit=False`` so validation can nudge migration. An explicit
-    value outside the supported set is *not* silently remapped — the loader
-    stays alive on the JP path so ``validate_schema`` can report it as an error,
-    but the ``explicit`` flag preserves the fact that the field was present.
+    The explicit ``language`` field is returned verbatim (lowercased), never
+    coerced to a supported language. Whether the code is actually implemented is
+    a separate question, surfaced via ``meta["implemented"]`` and enforced by
+    ``validate_schema`` — so a known-but-unimplemented code (zh/de/...) reaches
+    validation as itself instead of silently becoming ``ja``. Bare-tuple column
+    count is the legacy fallback (3 → ja, 2 → en) and is flagged
+    ``explicit=False`` so validation can nudge migration.
     """
     lang = d.get("language")
     if lang is not None:
-        l = str(lang).strip().lower()
-        if l in ("ja", "mixed"):
-            return "ja", True
-        if l == "en":
-            return "en", True
-        if l == "zh":
-            return "zh", True
-        return "ja", True  # unsupported explicit value — validate_schema errors
+        return str(lang).strip().lower(), True
     ls = d.get("lyric_sections", [])
     if ls and ls[0][1] and isinstance(ls[0][1][0], (list, tuple)):
         return ("ja" if len(ls[0][1][0]) == 3 else "en"), False
@@ -96,12 +93,18 @@ def compute_fingerprint(line_records: list) -> str:
 
 
 def _line_tuple(ln, language: str):
-    """Return (renderer_tuple, id_or_None, derived)."""
+    """Return (renderer_tuple, id_or_None, derived).
+
+    Dict-form lines are read via the language spec's ``line_fields``, so adding
+    a language only needs a spec entry — no per-language branch here. A language
+    without a spec (unimplemented) yields an empty 2-tuple; ``validate_schema``
+    blocks delivery before it can ever be rendered.
+    """
     if isinstance(ln, dict):
-        if language == "en":
-            return [ln.get("en", ""), ln.get("zh", "")], ln.get("id"), False
-        return [ln.get("jp", ""), ln.get("romaji", ""), ln.get("zh", "")], \
-            ln.get("id"), False
+        sp = spec(language)
+        if sp is None:
+            return ["", ""], ln.get("id"), False
+        return [ln.get(f, "") for f in sp["line_fields"]], ln.get("id"), False
     return list(ln), None, True
 
 
@@ -115,6 +118,7 @@ def load_song(path: str) -> tuple[dict, dict]:
     """
     d = adapt_legacy(load(path))
     language, language_explicit = detect_language(d)
+    sp = spec(language)
 
     sections, line_records = [], []
     derived_count = 0
@@ -134,16 +138,16 @@ def load_song(path: str) -> tuple[dict, dict]:
             if derived:
                 derived_count += 1
             rec = {"section": sname, "id": lid, "derived": derived}
-            if language == "en":
-                rec["en"], rec["zh"] = tup[0], tup[1]
-            else:
-                rec["jp"], rec["romaji"], rec["zh"] = tup
+            if sp is not None:
+                for field, value in zip(sp["line_fields"], tup):
+                    rec[field] = value
             line_records.append(rec)
         sections.append([sname, out_lines])
 
     meta = {
         "language": language,
         "language_explicit": language_explicit,
+        "implemented": is_implemented(language),
         "sections": sections,
         "lines": line_records,
         "derived_id_count": derived_count,

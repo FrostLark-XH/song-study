@@ -15,6 +15,7 @@ import json
 sys.stdout.reconfigure(encoding="utf-8")
 
 from scripts.dataload import load_song
+from scripts.languages import spec
 from scripts.validate import (line_metrics, lyric_completeness, verification_lines,
                               validate_schema, check_coverage)
 from scripts.atomic import atomic_replace
@@ -30,17 +31,10 @@ def _md_table(headers, rows):
     return out
 
 
-def _is_jp_vocab(vocab_table):
-    if vocab_table and vocab_table[0]:
-        first = str(vocab_table[0][0])
-        return any("぀" <= c <= "ヿ" or "一" <= c <= "鿿" for c in first)
-    return True
-
-
 def build_md(json_path, out_path=None):
     d, meta = load_song(json_path)
     language = meta["language"]
-    is_jp = language == "ja"
+    sp = spec(language)
     title = d.get("title", "song").replace("歌曲学习：", "")
 
     # Errors block delivery (non-zero exit); warnings never do.
@@ -77,10 +71,7 @@ def build_md(json_path, out_path=None):
             if section_name:
                 L.append(f"### {section_name}")
                 L.append("")
-            if is_jp:
-                L.extend(_md_table(["原文", "发音（罗马字）", "中文翻译"], sec_lines))
-            else:
-                L.extend(_md_table(["原文", "中文翻译"], sec_lines))
+            L.extend(_md_table(list(sp["lyric_headers"]), sec_lines))
             L.append("")
 
     # 背景故事
@@ -103,10 +94,7 @@ def build_md(json_path, out_path=None):
     if vocab_table:
         L.append("### 核心词汇")
         L.append("")
-        if _is_jp_vocab(vocab_table):
-            L.extend(_md_table(["原文", "读音", "词性", "释义", "等级"], vocab_table))
-        else:
-            L.extend(_md_table(["单词/短语", "音标/发音提示", "词性", "释义", "难度"], vocab_table))
+        L.extend(_md_table(list(sp["vocab_headers"]), vocab_table))
         L.append("")
         if d.get("vocab_note"):
             L.append(f"> {d['vocab_note']}")

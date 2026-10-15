@@ -17,7 +17,11 @@ import os
 import json
 from collections import Counter
 
-VALID_LANGUAGES = {"ja", "en", "zh", "mixed"}
+try:
+    from scripts.languages import spec, is_known, is_implemented, implemented_list
+except ImportError:  # running as `python scripts/validate.py` directly
+    from languages import spec, is_known, is_implemented, implemented_list
+
 VERIFY_STATUSES = {"已核验", "局部待核验", "文本不完整", "未获取到", "使用范围受限", "待核验"}
 DEFAULT_OUTPUTS = ("md", "docx")
 ALL_OUTPUTS = ("md", "docx", "pptx")
@@ -52,9 +56,18 @@ def validate_schema(d: dict, lines=None, language=None) -> tuple[list[str], list
     if "schema_version" not in d:
         warnings.append("缺 schema_version 字段（旧 schema，建议补 \"2.1\"）")
     if "language" not in d:
-        warnings.append("缺 language 字段，将从列数启发式推导（建议显式写 ja/en/zh/mixed）")
-    elif d["language"] not in VALID_LANGUAGES:
-        errors.append(f"language 非法值 {d['language']!r}，应为 {sorted(VALID_LANGUAGES)}")
+        warnings.append("缺 language 字段，将从列数启发式推导（建议显式写 language）")
+    else:
+        lang = str(d["language"]).strip().lower()
+        if not is_implemented(lang):
+            if is_known(lang):
+                errors.append(
+                    f"language {d['language']!r} 已识别但未实现，"
+                    f"当前仅支持 {implemented_list()}；不会回退到日语")
+            else:
+                errors.append(
+                    f"language 非法值 {d['language']!r}，未知语言代码；"
+                    f"当前仅支持 {implemented_list()}")
 
     for req in ("title", "lyric_sections"):
         if not d.get(req):
@@ -78,7 +91,10 @@ def validate_schema(d: dict, lines=None, language=None) -> tuple[list[str], list
                 errors.append(f"段 {name!r} 行 arity 不一致 {sorted(tuple_arities)}")
             for j, ln in enumerate(lines_in_sec):
                 if isinstance(ln, dict):
-                    need = ("jp", "romaji", "zh") if language != "en" else ("en", "zh")
+                    sp = spec(language) if language else None
+                    if sp is None:
+                        continue
+                    need = sp["line_fields"]
                     for k in need:
                         if not ln.get(k) or not str(ln[k]).strip():
                             warnings.append(f"段 {name!r} 第{j}行字段 {k!r} 为空")

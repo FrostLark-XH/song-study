@@ -35,10 +35,10 @@
 
 | 字段 | 实际形态与边界 |
 | --- | --- |
-| language | schema 接受 ja/en/zh/mixed；v3/v4 只支持 ja。语言接受值不等于渲染已验收。非日语沿用已适配旧路径；中文/混合/韩语先查列结构与能力，不直接套日语对象 |
-| lyric_sections | `[段名, 行列表]`；日语行 `{id,jp,romaji,zh}`，英文旧路径 `{id,en,zh}`。每格一句，不用 `/` 拼多句 |
+| language | 语言代码由 `scripts/languages.py` 单一识别。已实现：ja、en；已识别但未实现：zh/mixed/de/fr/ru/es/it/ko（明确报错阻断，不回退日语）；未知代码同样报错。语言接受值不等于渲染已验收，v3/v4 只支持 ja |
+| lyric_sections | `[段名, 行列表]`；行字段按语言档案 `line_fields` 取值——日语 `{id,jp,romaji,zh}`，英语 `{id,en,zh}`。每格一句，不用 `/` 拼多句 |
 | bg_paras / culture_notes | 字符串列表；需要的出处与解读身份写入文本或来源记录 |
-| vocab_table | 日语每行 `[原文,读音,词性,释义,参考JLPT]`，不确定等级 `—`；其他语言按已有生成器形态 |
+| vocab_table | 表头按语言档案 `vocab_headers` 取值；日语 `[原文,读音,词性,释义,参考JLPT]`（不确定等级 `—`），英语 `[单词/短语,音标/发音提示,词性,释义,难度]` |
 | grammar_points | 对象列表：name、section、quote、analysis、extra（歌词外例句） |
 | singing_tips | 对象列表：name、problem、solution |
 | essay | 对象：paragraphs（随笔正文段落列表）、author（署名）、model（模型标识）。正文定稿后默认写入；缺失表示未生成随笔。随笔是生成者解读，不代表创作者原意 |
